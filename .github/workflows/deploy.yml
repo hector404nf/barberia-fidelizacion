@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  FLUTTER_VERSION: '3.22.0'
+  FLUTTER_VERSION: '3.24.0'
 
 jobs:
   deploy:
@@ -31,10 +31,10 @@ jobs:
         run: npm install -g vercel@latest
 
       - name: Deploy to Vercel
+        working-directory: build/web
         run: |
-          vercel deploy build/web \
+          vercel deploy \
             --prod \
             --yes \
             --token ${{ secrets.VERCEL_TOKEN }} \
-            --scope hector404nfs-projects \
-            --name barberia-fidelizacion
+            --scope hector404nfs-projects
