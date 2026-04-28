@@ -28,21 +28,11 @@ class _RegistroScreenState extends ConsumerState<RegistroScreen> {
 
       final userId = authResponse.user!.id;
 
-      // Crear barbería
-      final barberiaResponse = await Supabase.instance.client
-          .from('barberias')
-          .insert({'nombre': _barberiaController.text.trim()})
-          .select()
-          .single();
-
-      final barberiaId = barberiaResponse['id'] as String;
-
-      // Crear perfil como dueño
-      await Supabase.instance.client.from('profiles').insert({
-        'id': userId,
-        'barberia_id': barberiaId,
-        'rol': 'dueño',
-        'nombre': _nombreController.text.trim(),
+      // Crear barbería y perfil via RPC (bypass RLS)
+      await Supabase.instance.client.rpc('crear_barberia_y_perfil', params: {
+        'p_user_id': userId,
+        'p_nombre_barberia': _barberiaController.text.trim(),
+        'p_nombre_usuario': _nombreController.text.trim(),
       });
 
       if (mounted) context.go('/dashboard');
