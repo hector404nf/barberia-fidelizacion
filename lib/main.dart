@@ -4,20 +4,19 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app.dart';
 
 // Credenciales de Supabase
-// Para desarrollo local, compila con:
-// flutter run --dart-define=SUPABASE_URL=https://tu-proyecto.supabase.co --dart-define=SUPABASE_ANON_KEY=tu-anon-key
-// Para Vercel, configura estas variables en el dashboard del proyecto.
-const _supabaseUrl = String.fromEnvironment('SUPABASE_URL');
-const _supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
+// Se pueden sobreescribir con --dart-define para CI/CD
+// o usando variables de entorno en el hosting.
+const _supabaseUrl = String.fromEnvironment(
+  'SUPABASE_URL',
+  defaultValue: 'https://gzrncvukxfaejcozffut.supabase.co',
+);
+const _supabaseAnonKey = String.fromEnvironment(
+  'SUPABASE_ANON_KEY',
+  defaultValue: 'sb_publishable_Pxw2qtWdfEhZVRpxYm861Q_gD6bLAeH',
+);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  assert(
-    _supabaseUrl.isNotEmpty && _supabaseAnonKey.isNotEmpty,
-    'Faltan las variables SUPABASE_URL y SUPABASE_ANON_KEY. '
-    'Compila con --dart-define=SUPABASE_URL=... --dart-define=SUPABASE_ANON_KEY=...',
-  );
 
   await Supabase.initialize(
     url: _supabaseUrl,
