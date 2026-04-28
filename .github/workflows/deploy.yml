@@ -7,8 +7,6 @@ on:
 
 env:
   FLUTTER_VERSION: '3.22.0'
-  VERCEL_ORG_ID: team_poKihZFaZhTv1FXuDb7MVoMN
-  VERCEL_PROJECT_ID: prj_v3djUdBuWzloeZdhhvrZua9TNquG
 
 jobs:
   deploy:
@@ -33,4 +31,10 @@ jobs:
         run: npm install -g vercel@latest
 
       - name: Deploy to Vercel
-        run: vercel --prod --token ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          vercel deploy build/web \
+            --prod \
+            --yes \
+            --token ${{ secrets.VERCEL_TOKEN }} \
+            --scope hector404nfs-projects \
+            --name barberia-fidelizacion
