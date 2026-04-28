@@ -457,6 +457,9 @@ CREATE POLICY "barberias_update" ON barberias
     EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND rol = 'dueño' AND barberia_id = barberias.id)
   );
 
+CREATE POLICY "barberias_insert" ON barberias
+  FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+
 -- Profiles: cada usuario ve su perfil
 CREATE POLICY "profiles_select" ON profiles
   FOR SELECT USING (id = auth.uid());
