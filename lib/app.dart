@@ -38,7 +38,12 @@ final _router = GoRouter(
         GoRoute(path: '/clientes/nuevo', builder: (context, state) => const ClienteFormScreen()),
         GoRoute(path: '/clientes/:id', builder: (context, state) => ClienteDetailScreen(clienteId: state.pathParameters['id']!)),
         GoRoute(path: '/clientes/:id/editar', builder: (context, state) => ClienteFormScreen(clienteId: state.pathParameters['id'])),
-        GoRoute(path: '/visitas/nueva', builder: (context, state) => const NuevaVisitaScreen()),
+        GoRoute(
+          path: '/visitas/nueva',
+          builder: (context, state) => NuevaVisitaScreen(
+            clienteId: state.uri.queryParameters['clienteId'],
+          ),
+        ),
         GoRoute(path: '/agenda', builder: (context, state) => const CalendarioScreen()),
         GoRoute(path: '/agenda/nueva', builder: (context, state) => const NuevaReservaScreen()),
         GoRoute(path: '/recompensas', builder: (context, state) => const RecompensasScreen()),
