@@ -307,7 +307,7 @@ class _RankingBarberos extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activos = ranking.where((b) => (b['total_visitas'] as num?) ?? 0 > 0).toList();
+    final activos = ranking.where((b) => ((b['total_visitas'] as num?) ?? 0) > 0).toList();
     if (activos.isEmpty) return const SizedBox.shrink();
 
     return Card(
