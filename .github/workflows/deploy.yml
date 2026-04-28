@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  FLUTTER_VERSION: '3.24.0'
+  FLUTTER_VERSION: '3.24.5'
 
 jobs:
   deploy:
@@ -20,12 +20,19 @@ jobs:
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
+          cache: true
+
+      - name: Verify Flutter
+        run: flutter doctor -v
 
       - name: Install dependencies
         run: flutter pub get
 
       - name: Build Web
         run: flutter build web --release
+
+      - name: Verify Build Output
+        run: ls -la build/web/
 
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
