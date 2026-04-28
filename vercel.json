@@ -1,18 +1,13 @@
 {
   "version": 2,
-  "builds": [
+  "framework": null,
+  "buildCommand": null,
+  "installCommand": null,
+  "outputDirectory": "build/web",
+  "rewrites": [
     {
-      "src": "build/web/**",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ],
   "headers": [
