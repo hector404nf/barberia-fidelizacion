@@ -31,18 +31,16 @@ import 'widgets/scaffold_cliente_nav.dart';
 final _router = GoRouter(
   redirect: (context, state) {
     final session = Supabase.instance.client.auth.currentSession;
-    final location = state.matchedLocation;
+    final path = state.uri.path;
 
-    // Rutas públicas (no requieren auth)
-    final isPublic = location == '/' ||
-        location == '/registro' ||
-        location == '/b/:slug' ||
-        location == '/b/:slug/registro';
+    // Rutas de cliente son públicas siempre
+    if (path.startsWith('/b/')) return null;
 
-    if (session == null && !isPublic) return '/';
+    if (session == null && path != '/' && path != '/registro') {
+      return '/';
+    }
 
-    // Si está logueado y está en login de staff
-    if (session != null && (location == '/' || location == '/registro')) {
+    if (session != null && (path == '/' || path == '/registro')) {
       return '/dashboard';
     }
 
