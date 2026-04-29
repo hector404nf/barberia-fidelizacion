@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'cliente_login_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -35,6 +36,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Si la URL real es /b/:slug, mostrar login de cliente
+    final webPath = Uri.base.path;
+    if (webPath.startsWith('/b/')) {
+      final slug = webPath.substring(3).split('/').first;
+      if (slug.isNotEmpty) {
+        return ClienteLoginScreen(slug: slug);
+      }
+    }
+
     return Scaffold(
       body: Center(
         child: ConstrainedBox(

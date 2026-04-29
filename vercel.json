@@ -6,7 +6,7 @@
   "outputDirectory": "build/web",
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/:path*",
       "destination": "/index.html"
     }
   ],
