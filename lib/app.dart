@@ -31,16 +31,19 @@ import 'widgets/scaffold_cliente_nav.dart';
 final _router = GoRouter(
   redirect: (context, state) {
     final session = Supabase.instance.client.auth.currentSession;
-    final path = state.uri.path;
+    final routePattern = state.fullPath;
 
-    // Rutas de cliente son públicas siempre
-    if (path.startsWith('/b/')) return null;
-
-    if (session == null && path != '/' && path != '/registro') {
-      return '/';
+    // Rutas públicas: cliente (/b/:slug) y auth general
+    if (routePattern == '/b/:slug' ||
+        routePattern == '/b/:slug/registro' ||
+        routePattern == '/' ||
+        routePattern == '/registro') {
+      return null;
     }
 
-    if (session != null && (path == '/' || path == '/registro')) {
+    if (session == null) return '/';
+
+    if (session != null && (routePattern == '/' || routePattern == '/registro')) {
       return '/dashboard';
     }
 
