@@ -31,19 +31,19 @@ import 'widgets/scaffold_cliente_nav.dart';
 final _router = GoRouter(
   redirect: (context, state) {
     final session = Supabase.instance.client.auth.currentSession;
-    final routePattern = state.fullPath;
+    // Lee directamente la URL del navegador (funciona en web)
+    final currentPath = Uri.base.path;
 
     // Rutas públicas: cliente (/b/:slug) y auth general
-    if (routePattern == '/b/:slug' ||
-        routePattern == '/b/:slug/registro' ||
-        routePattern == '/' ||
-        routePattern == '/registro') {
+    if (currentPath.startsWith('/b/') ||
+        currentPath == '/' ||
+        currentPath == '/registro') {
       return null;
     }
 
     if (session == null) return '/';
 
-    if (session != null && (routePattern == '/' || routePattern == '/registro')) {
+    if (session != null && (currentPath == '/' || currentPath == '/registro')) {
       return '/dashboard';
     }
 
