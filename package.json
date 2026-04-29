@@ -1,0 +1,19 @@
+{
+  "name": "barberia-fidelizacion-scripts",
+  "version": "1.0.0",
+  "description": "Scripts para gestionar Supabase CLI",
+  "scripts": {
+    "sb:link": "supabase link --project-ref gzrncvukxfaejcozffut",
+    "sb:status": "supabase status",
+    "sb:db-push": "supabase db push",
+    "sb:db-reset": "supabase db reset",
+    "sb:seed": "supabase db seed",
+    "sb:start": "supabase start",
+    "sb:stop": "supabase stop",
+    "sb:deploy-func": "supabase functions deploy",
+    "sb:logs": "supabase logs --project-ref gzrncvukxfaejcozffut"
+  },
+  "devDependencies": {
+    "supabase": "^2.0.0"
+  }
+}
