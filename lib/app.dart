@@ -31,22 +31,13 @@ import 'widgets/scaffold_cliente_nav.dart';
 final _router = GoRouter(
   redirect: (context, state) {
     final session = Supabase.instance.client.auth.currentSession;
-    final location = state.matchedLocation;
+    final location = state.uri.path; // URL real del navegador
 
     // Rutas públicas (no requieren auth)
-    final publicRoutes = [
-      '/',
-      '/registro',
-      r'^\/b\/[^\/]+$',
-      r'^\/b\/[^\/]+\/registro$',
-    ];
-
-    final isPublic = publicRoutes.any((pattern) {
-      if (pattern.startsWith('^')) {
-        return RegExp(pattern).hasMatch(location);
-      }
-      return location == pattern;
-    });
+    final isPublic = location == '/' ||
+        location == '/registro' ||
+        RegExp(r'^/b/[^/]+$').hasMatch(location) ||
+        RegExp(r'^/b/[^/]+/registro$').hasMatch(location);
 
     if (session == null && !isPublic) return '/';
 
