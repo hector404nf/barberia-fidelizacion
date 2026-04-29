@@ -7,9 +7,9 @@ import '../../../models/reserva.dart';
 import '../../../models/servicio.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/barberos_provider.dart';
+import '../../../providers/clientes_provider.dart';
 import '../../../providers/reservas_provider.dart';
 import '../../../providers/servicios_provider.dart';
-import '../../../repositories/cliente_repository.dart';
 
 class NuevaReservaScreen extends ConsumerStatefulWidget {
   const NuevaReservaScreen({super.key});
