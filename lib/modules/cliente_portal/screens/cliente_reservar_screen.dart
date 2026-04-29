@@ -22,6 +22,7 @@ class _ClienteReservarScreenState extends ConsumerState<ClienteReservarScreen> {
   String? _barberoSeleccionadoId;
   String? _servicio;
   String? _notas;
+  String? _horaSeleccionada;
   bool _loading = false;
   String? _error;
 
@@ -44,7 +45,12 @@ class _ClienteReservarScreenState extends ConsumerState<ClienteReservarScreen> {
     return (response as List).map((e) => (e['hora'] as String).substring(0, 5)).toList();
   }
 
-  Future<void> _reservar(String hora) async {
+  Future<void> _confirmarReserva() async {
+    if (_horaSeleccionada == null) {
+      setState(() => _error = 'Selecciona un horario');
+      return;
+    }
+
     final clienteAsync = ref.read(clienteAuthProvider);
     final cliente = clienteAsync.whenOrNull(data: (c) => c);
     if (cliente == null) {
@@ -53,7 +59,7 @@ class _ClienteReservarScreenState extends ConsumerState<ClienteReservarScreen> {
     }
 
     if (_servicio == null || _servicio!.trim().isEmpty) {
-      setState(() => _error = 'Selecciona o escribe un servicio');
+      setState(() => _error = 'Escribí el servicio que querés');
       return;
     }
 
@@ -68,7 +74,7 @@ class _ClienteReservarScreenState extends ConsumerState<ClienteReservarScreen> {
           clienteId: cliente.id,
           barberoId: _barberoSeleccionadoId,
           fecha: fecha,
-          hora: '$hora:00',
+          hora: '$_horaSeleccionada:00',
           servicio: _servicio!,
           notas: _notas,
           createdAt: DateTime.now(),
@@ -78,9 +84,13 @@ class _ClienteReservarScreenState extends ConsumerState<ClienteReservarScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Reserva creada correctamente')),
+          const SnackBar(content: Text('Reserva confirmada correctamente')),
         );
-        setState(() => _servicio = null);
+        setState(() {
+          _horaSeleccionada = null;
+          _servicio = null;
+          _notas = null;
+        });
       }
     } catch (e) {
       setState(() => _error = 'Error al reservar: $e');
@@ -176,15 +186,39 @@ class _ClienteReservarScreenState extends ConsumerState<ClienteReservarScreen> {
                   return const Center(child: Text('No hay horarios disponibles para este día'));
                 }
 
-                return Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: disponibles.map((hora) {
-                    return ActionChip(
-                      label: Text(hora),
-                      onPressed: _loading ? null : () => _reservar(hora),
-                    );
-                  }).toList(),
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: disponibles.map((hora) {
+                        final seleccionado = _horaSeleccionada == hora;
+                        return ChoiceChip(
+                          label: Text(hora),
+                          selected: seleccionado,
+                          onSelected: _loading
+                              ? null
+                              : (selected) {
+                                  setState(() {
+                                    _horaSeleccionada = selected ? hora : null;
+                                  });
+                                },
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: _loading || _horaSeleccionada == null ? null : _confirmarReserva,
+                      icon: _loading
+                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                          : const Icon(Icons.check_circle),
+                      label: Text(_loading ? 'Confirmando...' : 'Confirmar Reserva'),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                    ),
+                  ],
                 );
               },
             ),
