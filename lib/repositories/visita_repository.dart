@@ -17,7 +17,7 @@ class VisitaRepository {
   Future<List<Visita>> getByBarberia(String barberiaId, {int limit = 100}) async {
     final response = await _client
         .from('visitas')
-        .select(''', clientes!inner(nombre)')
+        .select('*, clientes!inner(nombre)')
         .eq('clientes.barberia_id', barberiaId)
         .order('fecha', ascending: false)
         .limit(limit);
