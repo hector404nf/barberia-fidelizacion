@@ -41,4 +41,25 @@ class RecompensaRepository {
         .single();
     return Recompensa.fromJson(response);
   }
+
+  Future<List<Recompensa>> getAllIncludingInactive(String barberiaId) async {
+    final response = await _client
+        .from('recompensas')
+        .select()
+        .eq('barberia_id', barberiaId)
+        .order('puntos_requeridos');
+    return (response as List).map((e) => Recompensa.fromJson(e)).toList();
+  }
+
+  Future<void> delete(String id) async {
+    await _client.from('recompensas').update({'activa': false}).eq('id', id);
+  }
+
+  Future<Map<String, dynamic>> canjear(String clienteId, String recompensaId) async {
+    final response = await _client.rpc('canjear_recompensa', params: {
+      'p_cliente_id': clienteId,
+      'p_recompensa_id': recompensaId,
+    });
+    return response as Map<String, dynamic>;
+  }
 }

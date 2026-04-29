@@ -21,7 +21,12 @@ class ConfigScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.people),
             title: const Text('Barberos'),
-            onTap: () {},
+            onTap: () => context.push('/barberos'),
+          ),
+          ListTile(
+            leading: const Icon(Icons.history),
+            title: const Text('Historial de Visitas'),
+            onTap: () => context.push('/visitas'),
           ),
           ListTile(
             leading: const Icon(Icons.info),

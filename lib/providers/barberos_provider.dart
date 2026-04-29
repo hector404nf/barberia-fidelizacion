@@ -12,3 +12,9 @@ final barberosProvider = FutureProvider.autoDispose<List<Barbero>>((ref) async {
   if (barberiaId == null) return [];
   return ref.read(barberoRepositoryProvider).getAll(barberiaId);
 });
+
+final barberosAdminProvider = FutureProvider.autoDispose<List<Barbero>>((ref) async {
+  final barberiaId = ref.watch(barberiaIdProvider);
+  if (barberiaId == null) return [];
+  return ref.read(barberoRepositoryProvider).getAllIncludingInactive(barberiaId);
+});

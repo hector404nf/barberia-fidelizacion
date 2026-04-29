@@ -38,6 +38,26 @@ class Barbero extends Equatable {
         'foto_url': fotoUrl,
       };
 
+  Barbero copyWith({
+    String? id,
+    String? barberiaId,
+    String? nombre,
+    String? especialidad,
+    String? fotoUrl,
+    bool? activo,
+    DateTime? createdAt,
+  }) {
+    return Barbero(
+      id: id ?? this.id,
+      barberiaId: barberiaId ?? this.barberiaId,
+      nombre: nombre ?? this.nombre,
+      especialidad: especialidad ?? this.especialidad,
+      fotoUrl: fotoUrl ?? this.fotoUrl,
+      activo: activo ?? this.activo,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
   @override
   List<Object?> get props => [id, nombre, especialidad, activo];
 }

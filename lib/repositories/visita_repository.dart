@@ -14,10 +14,10 @@ class VisitaRepository {
     return (response as List).map((e) => Visita.fromJson(e)).toList();
   }
 
-  Future<List<Visita>> getByBarberia(String barberiaId, {int limit = 50}) async {
+  Future<List<Visita>> getByBarberia(String barberiaId, {int limit = 100}) async {
     final response = await _client
         .from('visitas')
-        .select('*, clientes(nombre)')
+        .select(''', clientes!inner(nombre)')
         .eq('clientes.barberia_id', barberiaId)
         .order('fecha', ascending: false)
         .limit(limit);

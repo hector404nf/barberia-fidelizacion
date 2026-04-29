@@ -50,6 +50,32 @@ class Recompensa extends Equatable {
         'stock_actual': stockActual,
       };
 
+  Recompensa copyWith({
+    String? id,
+    String? barberiaId,
+    String? nombre,
+    int? puntosRequeridos,
+    String? tipo,
+    String? valor,
+    bool? activa,
+    bool? stockLimitado,
+    int? stockActual,
+    DateTime? createdAt,
+  }) {
+    return Recompensa(
+      id: id ?? this.id,
+      barberiaId: barberiaId ?? this.barberiaId,
+      nombre: nombre ?? this.nombre,
+      puntosRequeridos: puntosRequeridos ?? this.puntosRequeridos,
+      tipo: tipo ?? this.tipo,
+      valor: valor ?? this.valor,
+      activa: activa ?? this.activa,
+      stockLimitado: stockLimitado ?? this.stockLimitado,
+      stockActual: stockActual ?? this.stockActual,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
   @override
   List<Object?> get props => [id, nombre, puntosRequeridos, activa];
 }
