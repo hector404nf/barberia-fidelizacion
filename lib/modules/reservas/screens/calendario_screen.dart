@@ -57,7 +57,13 @@ class _CalendarioScreenState extends ConsumerState<CalendarioScreen> {
                   itemCount: reservas.length,
                   itemBuilder: (context, index) {
                     final r = reservas[index];
-                    return _ReservaTile(reserva: r);
+                    return _ReservaTile(
+                      reserva: r,
+                      onEstadoChanged: (estado) async {
+                        await ref.read(reservaRepositoryProvider).updateEstado(r.id, estado);
+                        ref.invalidate(reservasPorFechaProvider(selected));
+                      },
+                    );
                   },
                 );
               },
@@ -77,25 +83,77 @@ class _CalendarioScreenState extends ConsumerState<CalendarioScreen> {
 
 class _ReservaTile extends StatelessWidget {
   final Reserva reserva;
-  const _ReservaTile({required this.reserva});
+  final ValueChanged<String> onEstadoChanged;
+
+  const _ReservaTile({
+    required this.reserva,
+    required this.onEstadoChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
     final color = _colorPorEstado(reserva.estado);
+    final puedeAccionar = reserva.estado == 'pendiente';
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: color.withOpacity(0.2),
-          child: Text(reserva.hora.substring(0, 5), style: TextStyle(color: color, fontSize: 12)),
-        ),
-        title: Text(reserva.servicio),
-        subtitle: Text('Cliente: ${reserva.clienteId.substring(0, 8)}...'),
-        trailing: Chip(
-          label: Text(reserva.estado, style: const TextStyle(fontSize: 10)),
-          backgroundColor: color.withOpacity(0.2),
-          side: BorderSide.none,
-        ),
+      child: Column(
+        children: [
+          ListTile(
+            leading: CircleAvatar(
+              backgroundColor: color.withOpacity(0.2),
+              child: Text(reserva.hora.substring(0, 5), style: TextStyle(color: color, fontSize: 12)),
+            ),
+            title: Text(reserva.servicio),
+            subtitle: Text('Cliente: ${reserva.clienteId.substring(0, 8)}...'),
+            trailing: Chip(
+              label: Text(reserva.estado, style: const TextStyle(fontSize: 10)),
+              backgroundColor: color.withOpacity(0.2),
+              side: BorderSide.none,
+            ),
+          ),
+          if (puedeAccionar)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => onEstadoChanged('completada'),
+                      icon: const Icon(Icons.check, size: 16),
+                      label: const Text('Completar', style: TextStyle(fontSize: 12)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => onEstadoChanged('cancelada'),
+                      icon: const Icon(Icons.cancel, size: 16),
+                      label: const Text('Cancelar', style: TextStyle(fontSize: 12)),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.red,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => onEstadoChanged('no_show'),
+                      icon: const Icon(Icons.person_off, size: 16),
+                      label: const Text('No Show', style: TextStyle(fontSize: 12)),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.orange,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }

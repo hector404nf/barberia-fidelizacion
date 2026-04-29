@@ -4,10 +4,11 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../models/cliente.dart';
 import '../../../models/reserva.dart';
+import '../../../models/servicio.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/barberos_provider.dart';
-import '../../../providers/clientes_provider.dart';
 import '../../../providers/reservas_provider.dart';
+import '../../../providers/servicios_provider.dart';
 import '../../../repositories/cliente_repository.dart';
 
 class NuevaReservaScreen extends ConsumerStatefulWidget {
@@ -224,9 +225,34 @@ class _NuevaReservaScreenState extends ConsumerState<NuevaReservaScreen> {
               const SizedBox(height: 16),
 
               // Servicio
-              TextField(
-                controller: _servicioController,
-                decoration: const InputDecoration(labelText: 'Servicio *'),
+              ref.watch(serviciosProvider).when(
+                data: (servicios) {
+                  if (servicios.isEmpty) {
+                    return TextField(
+                      controller: _servicioController,
+                      decoration: const InputDecoration(labelText: 'Servicio *'),
+                    );
+                  }
+                  return DropdownButtonFormField<Servicio>(
+                    decoration: const InputDecoration(labelText: 'Servicio *'),
+                    items: servicios.map((s) {
+                      return DropdownMenuItem(
+                        value: s,
+                        child: Text('${s.nombre} - \$${s.precio.toStringAsFixed(0)}'),
+                      );
+                    }).toList(),
+                    onChanged: (s) {
+                      if (s != null) {
+                        setState(() => _servicioController.text = s.nombre);
+                      }
+                    },
+                  );
+                },
+                loading: () => const LinearProgressIndicator(),
+                error: (_, __) => TextField(
+                  controller: _servicioController,
+                  decoration: const InputDecoration(labelText: 'Servicio *'),
+                ),
               ),
               const SizedBox(height: 16),
 

@@ -5,9 +5,11 @@ import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../models/reserva.dart';
+import '../../../models/servicio.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/barberos_provider.dart';
 import '../../../providers/reservas_provider.dart';
+import '../../../providers/servicios_provider.dart';
 
 class ClienteReservarScreen extends ConsumerStatefulWidget {
   const ClienteReservarScreen({super.key});
@@ -147,14 +149,39 @@ class _ClienteReservarScreenState extends ConsumerState<ClienteReservarScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Servicio
-            TextField(
-              decoration: const InputDecoration(
-                labelText: 'Servicio *',
-                hintText: 'Ej: Corte, Barba, etc.',
+              // Servicio
+              ref.watch(serviciosProvider).when(
+                data: (servicios) {
+                  if (servicios.isEmpty) {
+                    return TextField(
+                      decoration: const InputDecoration(
+                        labelText: 'Servicio *',
+                        hintText: 'Ej: Corte, Barba, etc.',
+                      ),
+                      onChanged: (v) => setState(() => _servicio = v),
+                    );
+                  }
+                  return DropdownButtonFormField<Servicio>(
+                    decoration: const InputDecoration(labelText: 'Servicio *'),
+                    items: servicios.map((s) {
+                      return DropdownMenuItem(
+                        value: s,
+                        child: Text('${s.nombre} - \$${s.precio.toStringAsFixed(0)}'),
+                      );
+                    }).toList(),
+                    onChanged: (s) {
+                      if (s != null) {
+                        setState(() => _servicio = s.nombre);
+                      }
+                    },
+                  );
+                },
+                loading: () => const LinearProgressIndicator(),
+                error: (_, __) => TextField(
+                  decoration: const InputDecoration(labelText: 'Servicio *'),
+                  onChanged: (v) => setState(() => _servicio = v),
+                ),
               ),
-              onChanged: (v) => setState(() => _servicio = v),
-            ),
             const SizedBox(height: 8),
             TextField(
               decoration: const InputDecoration(labelText: 'Notas (opcional)'),

@@ -8,6 +8,7 @@ import '../../../providers/auth_provider.dart';
 import '../../../providers/barberos_provider.dart';
 import '../../../providers/clientes_provider.dart';
 import '../../../providers/config_provider.dart';
+import '../../../providers/servicios_provider.dart';
 import '../../../providers/visitas_provider.dart';
 import '../../../repositories/cliente_repository.dart';
 
@@ -227,11 +228,63 @@ class _NuevaVisitaScreenState extends ConsumerState<NuevaVisitaScreen> {
               const SizedBox(height: 16),
 
               // Servicio
-              TextField(
-                controller: _servicioController,
-                decoration: const InputDecoration(
-                  labelText: 'Servicio *',
-                  hintText: 'Ej: Corte + Barba',
+              ref.watch(serviciosProvider).when(
+                data: (servicios) {
+                  if (servicios.isEmpty) {
+                    return Column(
+                      children: [
+                        TextField(
+                          controller: _servicioController,
+                          decoration: const InputDecoration(
+                            labelText: 'Servicio *',
+                            hintText: 'Ej: Corte + Barba',
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: _montoController,
+                          decoration: const InputDecoration(
+                            labelText: 'Monto *',
+                            prefixText: '\$',
+                          ),
+                          keyboardType: TextInputType.number,
+                          onChanged: (_) => setState(() {}),
+                        ),
+                      ],
+                    );
+                  }
+                  return DropdownButtonFormField<Servicio>(
+                    decoration: const InputDecoration(labelText: 'Servicio *'),
+                    items: servicios.map((s) {
+                      return DropdownMenuItem(
+                        value: s,
+                        child: Text('${s.nombre} - \$${s.precio.toStringAsFixed(0)}'),
+                      );
+                    }).toList(),
+                    onChanged: (s) {
+                      if (s != null) {
+                        setState(() {
+                          _servicioController.text = s.nombre;
+                          _montoController.text = s.precio.toString();
+                        });
+                      }
+                    },
+                  );
+                },
+                loading: () => const LinearProgressIndicator(),
+                error: (_, __) => Column(
+                  children: [
+                    TextField(
+                      controller: _servicioController,
+                      decoration: const InputDecoration(labelText: 'Servicio *'),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _montoController,
+                      decoration: const InputDecoration(labelText: 'Monto *', prefixText: '\$'),
+                      keyboardType: TextInputType.number,
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 16),

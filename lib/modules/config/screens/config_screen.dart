@@ -100,6 +100,11 @@ class ConfigScreen extends ConsumerWidget {
             ),
 
           ListTile(
+            leading: const Icon(Icons.cut),
+            title: const Text('Servicios y Precios'),
+            onTap: () => context.push('/servicios'),
+          ),
+          ListTile(
             leading: const Icon(Icons.people),
             title: const Text('Barberos'),
             onTap: () => context.push('/barberos'),

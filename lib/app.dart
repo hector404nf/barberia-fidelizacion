@@ -19,8 +19,12 @@ import 'modules/reservas/screens/nueva_reserva_screen.dart';
 import 'modules/puntos/screens/recompensas_screen.dart';
 import 'modules/puntos/screens/recompensa_form_screen.dart';
 import 'modules/config/screens/config_screen.dart';
+import 'modules/puntos/screens/recompensa_form_screen.dart';
+import 'modules/visitas/screens/visitas_list_screen.dart';
 import 'modules/barberos/screens/barberos_list_screen.dart';
 import 'modules/barberos/screens/barbero_form_screen.dart';
+import 'modules/servicios/screens/servicios_list_screen.dart';
+import 'modules/servicios/screens/servicio_form_screen.dart';
 import 'modules/cliente_portal/screens/cliente_portal_screen.dart';
 import 'modules/cliente_portal/screens/cliente_visitas_screen.dart';
 import 'modules/cliente_portal/screens/cliente_reservar_screen.dart';
@@ -92,6 +96,9 @@ final _router = GoRouter(
         GoRoute(path: '/barberos', builder: (context, state) => const BarberosListScreen()),
         GoRoute(path: '/barberos/nuevo', builder: (context, state) => const BarberoFormScreen()),
         GoRoute(path: '/barberos/:id/editar', builder: (context, state) => BarberoFormScreen(barberoId: state.pathParameters['id'])),
+        GoRoute(path: '/servicios', builder: (context, state) => const ServiciosListScreen()),
+        GoRoute(path: '/servicios/nuevo', builder: (context, state) => const ServicioFormScreen()),
+        GoRoute(path: '/servicios/:id/editar', builder: (context, state) => ServicioFormScreen(servicioId: state.pathParameters['id'])),
         GoRoute(path: '/config', builder: (context, state) => const ConfigScreen()),
       ],
     ),
