@@ -29,7 +29,6 @@ import 'widgets/scaffold_with_nav.dart';
 import 'widgets/scaffold_cliente_nav.dart';
 
 final _router = GoRouter(
-  initialLocation: '/',
   redirect: (context, state) {
     final session = Supabase.instance.client.auth.currentSession;
     final location = state.matchedLocation;
