@@ -16,9 +16,10 @@ class ScaffoldWithNav extends ConsumerWidget {
     int currentIndex = 0;
     if (location.startsWith('/dashboard')) currentIndex = 0;
     else if (location.startsWith('/clientes')) currentIndex = 1;
-    else if (location.startsWith('/agenda')) currentIndex = 2;
-    else if (location.startsWith('/recompensas')) currentIndex = 3;
-    else if (location.startsWith('/config')) currentIndex = 4;
+    else if (location.startsWith('/servicios')) currentIndex = 2;
+    else if (location.startsWith('/agenda')) currentIndex = 3;
+    else if (location.startsWith('/recompensas')) currentIndex = 4;
+    else if (location.startsWith('/config')) currentIndex = 5;
 
     return Scaffold(
       body: child,
@@ -33,12 +34,15 @@ class ScaffoldWithNav extends ConsumerWidget {
               context.go('/clientes');
               break;
             case 2:
-              context.go('/agenda');
+              context.go('/servicios');
               break;
             case 3:
-              context.go('/recompensas');
+              context.go('/agenda');
               break;
             case 4:
+              context.go('/recompensas');
+              break;
+            case 5:
               context.go('/config');
               break;
           }
@@ -51,6 +55,10 @@ class ScaffoldWithNav extends ConsumerWidget {
           const NavigationDestination(
             icon: Icon(PhosphorIconsRegular.users),
             label: 'Clientes',
+          ),
+          const NavigationDestination(
+            icon: Icon(PhosphorIconsRegular.scissors),
+            label: 'Servicios',
           ),
           const NavigationDestination(
             icon: Icon(PhosphorIconsRegular.calendarBlank),
