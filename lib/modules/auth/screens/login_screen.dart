@@ -35,6 +35,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final goRouter = GoRouter.of(context);
+    final debugPath = goRouter.routerDelegate.currentConfiguration.uri.path;
+    final debugFullPath = goRouter.routerDelegate.currentConfiguration.fullPath;
+
     return Scaffold(
       body: Center(
         child: ConstrainedBox(
@@ -45,6 +49,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // DEBUG: muestra la ruta actual
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  color: Colors.red.shade100,
+                  child: Column(
+                    children: [
+                      Text('DEBUG PATH: $debugPath', style: const TextStyle(color: Colors.red, fontSize: 10)),
+                      Text('DEBUG FULL: $debugFullPath', style: const TextStyle(color: Colors.red, fontSize: 10)),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
                 Icon(Icons.cut, size: 64, color: Theme.of(context).colorScheme.primary),
                 const SizedBox(height: 16),
                 Text('Barbería Fidelización',
