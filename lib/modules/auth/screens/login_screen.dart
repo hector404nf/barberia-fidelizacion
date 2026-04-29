@@ -23,39 +23,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
-
-      // Detectar tipo de usuario y redirigir
-      final userId = Supabase.instance.client.auth.currentUser!.id;
-
-      // Primero verificar si es staff
-      final profileResponse = await Supabase.instance.client
-          .from('profiles')
-          .select()
-          .eq('id', userId)
-          .maybeSingle();
-
-      if (profileResponse != null && mounted) {
-        context.go('/dashboard');
-        return;
-      }
-
-      // Si no es staff, verificar si es cliente
-      final clienteResponse = await Supabase.instance.client
-          .from('clientes')
-          .select()
-          .eq('auth_user_id', userId)
-          .maybeSingle();
-
-      if (clienteResponse != null && mounted) {
-        context.go('/cliente');
-        return;
-      }
-
-      // Si no tiene perfil ni cliente, es un usuario huérfano
-      if (mounted) {
-        setState(() => _error = 'Usuario sin perfil asociado. Contacta al administrador.');
-        await Supabase.instance.client.auth.signOut();
-      }
+      if (mounted) context.go('/dashboard');
     } on AuthException catch (e) {
       setState(() => _error = e.message);
     } catch (e) {
@@ -84,7 +52,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     textAlign: TextAlign.center),
                 const SizedBox(height: 8),
                 Text(
-                  'Sistema de fidelización para barberías',
+                  'Acceso para dueños y barberos',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context).colorScheme.outline,
                       ),
@@ -113,31 +81,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
                       : const Text('Ingresar'),
                 ),
-                const SizedBox(height: 24),
-                const Divider(),
-                const SizedBox(height: 12),
-                Text(
-                  '¿No tienes cuenta?',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => context.push('/registro'),
-                        child: const Text('Soy Barbero/Dueño'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => context.push('/registro-cliente'),
-                        child: const Text('Soy Cliente'),
-                      ),
-                    ),
-                  ],
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () => context.push('/registro'),
+                  child: const Text('Crear cuenta de dueño/barbero'),
                 ),
               ],
             ),

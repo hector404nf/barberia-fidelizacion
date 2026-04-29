@@ -54,6 +54,16 @@ final barberiaIdProvider = Provider<String?>((ref) {
   return clienteAsync.whenOrNull(data: (c) => c?.barberiaId);
 });
 
+// Provider para cargar barberia por slug (usado en login/registro de clientes)
+final barberiaPorSlugProvider = FutureProvider.autoDispose.family<Map<String, dynamic>?, String>((ref, slug) async {
+  final response = await Supabase.instance.client
+      .rpc('get_barberia_por_slug', params: {'p_slug': slug})
+      .maybeSingle();
+
+  if (response == null) return null;
+  return response as Map<String, dynamic>;
+});
+
 // --- CLIENTE ---
 
 final clienteAuthProvider = FutureProvider<Cliente?>((ref) async {

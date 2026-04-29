@@ -25,6 +25,10 @@ supabase/.temp/
 # Vercel
 .vercel
 
+# Node
+node_modules/
+package-lock.json
+
 # Binarios locales
 supabase.exe
 supabase.tar.gz

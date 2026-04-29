@@ -6,6 +6,7 @@ import 'core/theme/app_theme.dart';
 import 'providers/auth_provider.dart';
 import 'modules/auth/screens/login_screen.dart';
 import 'modules/auth/screens/registro_screen.dart';
+import 'modules/auth/screens/cliente_login_screen.dart';
 import 'modules/auth/screens/cliente_registro_screen.dart';
 import 'modules/dashboard/screens/dashboard_screen.dart';
 import 'modules/clientes/screens/clientes_list_screen.dart';
@@ -31,17 +32,50 @@ final _router = GoRouter(
   initialLocation: '/',
   redirect: (context, state) {
     final session = Supabase.instance.client.auth.currentSession;
-    final isAuthRoute = state.matchedLocation == '/' ||
-        state.matchedLocation == '/registro' ||
-        state.matchedLocation == '/registro-cliente';
+    final location = state.matchedLocation;
 
-    if (session == null && !isAuthRoute) return '/';
+    // Rutas públicas (no requieren auth)
+    final publicRoutes = [
+      '/',
+      '/registro',
+      r'^\/b\/[^\/]+$',
+      r'^\/b\/[^\/]+\/registro$',
+    ];
+
+    final isPublic = publicRoutes.any((pattern) {
+      if (pattern.startsWith('^')) {
+        return RegExp(pattern).hasMatch(location);
+      }
+      return location == pattern;
+    });
+
+    if (session == null && !isPublic) return '/';
+
+    // Si está logueado y está en una ruta pública de auth
+    if (session != null && (location == '/' || location == '/registro')) {
+      return '/dashboard';
+    }
+
     return null;
   },
   routes: [
+    // === AUTH GENERAL ===
     GoRoute(path: '/', builder: (context, state) => const LoginScreen()),
     GoRoute(path: '/registro', builder: (context, state) => const RegistroScreen()),
-    GoRoute(path: '/registro-cliente', builder: (context, state) => const ClienteRegistroScreen()),
+
+    // === CLIENTE PÚBLICO CON SLUG ===
+    GoRoute(
+      path: '/b/:slug',
+      builder: (context, state) => ClienteLoginScreen(
+        slug: state.pathParameters['slug']!,
+      ),
+    ),
+    GoRoute(
+      path: '/b/:slug/registro',
+      builder: (context, state) => ClienteRegistroScreen(
+        slug: state.pathParameters['slug']!,
+      ),
+    ),
 
     // === STAFF SHELL ===
     ShellRoute(
@@ -89,7 +123,6 @@ class BarberiaApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Escucha cambios de autenticación y refresca el router
     ref.listen(authStateProvider, (previous, next) {
       _router.refresh();
     });
