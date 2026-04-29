@@ -58,6 +58,11 @@ class BarberiaApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Escucha cambios de autenticación y refresca el router
+    ref.listen(authStateProvider, (previous, next) {
+      _router.refresh();
+    });
+
     return MaterialApp.router(
       title: 'Barberia Fidelizacion',
       debugShowCheckedModeBanner: false,
