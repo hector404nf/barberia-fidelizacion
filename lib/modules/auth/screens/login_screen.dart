@@ -23,6 +23,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
       );
+      if (mounted) context.go('/dashboard');
     } on AuthException catch (e) {
       setState(() => _error = e.message);
     } catch (e) {

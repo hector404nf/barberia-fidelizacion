@@ -35,6 +35,12 @@ class _RegistroScreenState extends ConsumerState<RegistroScreen> {
         'p_nombre_usuario': _nombreController.text.trim(),
       });
 
+      // Iniciar sesión automáticamente después del registro
+      await Supabase.instance.client.auth.signInWithPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      );
+
       if (mounted) context.go('/dashboard');
     } on PostgrestException catch (e) {
       setState(() => _error = e.message);
