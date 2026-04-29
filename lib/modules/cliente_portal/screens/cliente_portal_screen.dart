@@ -102,7 +102,7 @@ class ClientePortalScreen extends ConsumerWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: _ActionCard(
-                        icon: Icons.trophy,
+                        icon: Icons.emoji_events,
                         label: 'Canjear',
                         onTap: () => context.go('/cliente/recompensas'),
                       ),

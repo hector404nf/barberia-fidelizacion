@@ -72,7 +72,7 @@ final clienteAuthProvider = FutureProvider<Cliente?>((ref) async {
 
   final response = await Supabase.instance.client
       .from('clientes')
-      .select(''', puntos_cliente(puntos_actuales)')
+      .select('*, puntos_cliente(puntos_actuales)')
       .eq('auth_user_id', user.id)
       .maybeSingle();
 
