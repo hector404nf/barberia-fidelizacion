@@ -6,34 +6,44 @@ import 'core/theme/app_theme.dart';
 import 'providers/auth_provider.dart';
 import 'modules/auth/screens/login_screen.dart';
 import 'modules/auth/screens/registro_screen.dart';
+import 'modules/auth/screens/cliente_registro_screen.dart';
 import 'modules/dashboard/screens/dashboard_screen.dart';
 import 'modules/clientes/screens/clientes_list_screen.dart';
 import 'modules/clientes/screens/cliente_form_screen.dart';
 import 'modules/clientes/screens/cliente_detail_screen.dart';
 import 'modules/visitas/screens/nueva_visita_screen.dart';
+import 'modules/visitas/screens/visitas_list_screen.dart';
 import 'modules/reservas/screens/calendario_screen.dart';
 import 'modules/reservas/screens/nueva_reserva_screen.dart';
 import 'modules/puntos/screens/recompensas_screen.dart';
-import 'modules/config/screens/config_screen.dart';
 import 'modules/puntos/screens/recompensa_form_screen.dart';
-import 'modules/visitas/screens/visitas_list_screen.dart';
+import 'modules/config/screens/config_screen.dart';
 import 'modules/barberos/screens/barberos_list_screen.dart';
 import 'modules/barberos/screens/barbero_form_screen.dart';
+import 'modules/cliente_portal/screens/cliente_portal_screen.dart';
+import 'modules/cliente_portal/screens/cliente_visitas_screen.dart';
+import 'modules/cliente_portal/screens/cliente_reservar_screen.dart';
+import 'modules/cliente_portal/screens/cliente_recompensas_screen.dart';
 import 'widgets/scaffold_with_nav.dart';
+import 'widgets/scaffold_cliente_nav.dart';
 
 final _router = GoRouter(
   initialLocation: '/',
   redirect: (context, state) {
     final session = Supabase.instance.client.auth.currentSession;
-    final isAuthRoute = state.matchedLocation == '/' || state.matchedLocation == '/registro';
+    final isAuthRoute = state.matchedLocation == '/' ||
+        state.matchedLocation == '/registro' ||
+        state.matchedLocation == '/registro-cliente';
 
     if (session == null && !isAuthRoute) return '/';
-    if (session != null && isAuthRoute) return '/dashboard';
     return null;
   },
   routes: [
     GoRoute(path: '/', builder: (context, state) => const LoginScreen()),
     GoRoute(path: '/registro', builder: (context, state) => const RegistroScreen()),
+    GoRoute(path: '/registro-cliente', builder: (context, state) => const ClienteRegistroScreen()),
+
+    // === STAFF SHELL ===
     ShellRoute(
       builder: (context, state, child) => ScaffoldWithNav(child: child),
       routes: [
@@ -58,6 +68,17 @@ final _router = GoRouter(
         GoRoute(path: '/barberos/nuevo', builder: (context, state) => const BarberoFormScreen()),
         GoRoute(path: '/barberos/:id/editar', builder: (context, state) => BarberoFormScreen(barberoId: state.pathParameters['id'])),
         GoRoute(path: '/config', builder: (context, state) => const ConfigScreen()),
+      ],
+    ),
+
+    // === CLIENTE SHELL ===
+    ShellRoute(
+      builder: (context, state, child) => ScaffoldClienteNav(child: child),
+      routes: [
+        GoRoute(path: '/cliente', builder: (context, state) => const ClientePortalScreen()),
+        GoRoute(path: '/cliente/visitas', builder: (context, state) => const ClienteVisitasScreen()),
+        GoRoute(path: '/cliente/reservar', builder: (context, state) => const ClienteReservarScreen()),
+        GoRoute(path: '/cliente/recompensas', builder: (context, state) => const ClienteRecompensasScreen()),
       ],
     ),
   ],

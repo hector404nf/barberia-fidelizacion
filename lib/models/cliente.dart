@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 class Cliente extends Equatable {
   final String id;
   final String barberiaId;
+  final String? authUserId;
   final String nombre;
   final String telefono;
   final DateTime? fechaNacimiento;
@@ -16,6 +17,7 @@ class Cliente extends Equatable {
   const Cliente({
     required this.id,
     required this.barberiaId,
+    this.authUserId,
     required this.nombre,
     required this.telefono,
     this.fechaNacimiento,
@@ -31,6 +33,7 @@ class Cliente extends Equatable {
     return Cliente(
       id: json['id'] as String,
       barberiaId: json['barberia_id'] as String,
+      authUserId: json['auth_user_id'] as String?,
       nombre: json['nombre'] as String,
       telefono: json['telefono'] as String,
       fechaNacimiento: json['fecha_nacimiento'] != null
@@ -50,6 +53,7 @@ class Cliente extends Equatable {
   Map<String, dynamic> toJson() => {
         'id': id,
         'barberia_id': barberiaId,
+        'auth_user_id': authUserId,
         'nombre': nombre,
         'telefono': telefono,
         'fecha_nacimiento': fechaNacimiento?.toIso8601String().split('T').first,
@@ -63,6 +67,7 @@ class Cliente extends Equatable {
 
   Map<String, dynamic> toInsertJson() => {
         'barberia_id': barberiaId,
+        'auth_user_id': authUserId,
         'nombre': nombre,
         'telefono': telefono,
         'fecha_nacimiento': fechaNacimiento?.toIso8601String().split('T').first,
@@ -72,6 +77,7 @@ class Cliente extends Equatable {
   Cliente copyWith({
     String? id,
     String? barberiaId,
+    String? authUserId,
     String? nombre,
     String? telefono,
     DateTime? fechaNacimiento,
@@ -85,6 +91,7 @@ class Cliente extends Equatable {
     return Cliente(
       id: id ?? this.id,
       barberiaId: barberiaId ?? this.barberiaId,
+      authUserId: authUserId ?? this.authUserId,
       nombre: nombre ?? this.nombre,
       telefono: telefono ?? this.telefono,
       fechaNacimiento: fechaNacimiento ?? this.fechaNacimiento,
