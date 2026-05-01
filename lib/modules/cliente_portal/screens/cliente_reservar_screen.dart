@@ -23,7 +23,6 @@ class _ClienteReservarScreenState extends ConsumerState<ClienteReservarScreen> {
   DateTime? _selectedDay;
   String? _barberoSeleccionadoId;
   String? _servicio;
-  String? _notas;
   String? _horaSeleccionada;
   bool _loading = false;
   String? _error;
@@ -38,13 +37,16 @@ class _ClienteReservarScreenState extends ConsumerState<ClienteReservarScreen> {
     final barberiaId = ref.read(barberiaIdProvider);
     if (barberiaId == null) return [];
 
-    final response = await Supabase.instance.client.rpc('get_horarios_ocupados', params: {
-      'p_barberia_id': barberiaId,
-      'p_fecha': fecha.toIso8601String().split('T').first,
-      if (barberoId != null) 'p_barbero_id': barberoId,
-    });
-
-    return (response as List).map((e) => (e['hora'] as String).substring(0, 5)).toList();
+    try {
+      final response = await Supabase.instance.client.rpc('get_horarios_ocupados', params: {
+        'p_barberia_id': barberiaId,
+        'p_fecha': fecha.toIso8601String().split('T').first,
+        if (barberoId != null) 'p_barbero_id': barberoId,
+      });
+      return (response as List).map((e) => (e['hora'] as String).substring(0, 5)).toList();
+    } catch (e) {
+      return [];
+    }
   }
 
   Future<void> _confirmarReserva() async {
@@ -61,7 +63,7 @@ class _ClienteReservarScreenState extends ConsumerState<ClienteReservarScreen> {
     }
 
     if (_servicio == null || _servicio!.trim().isEmpty) {
-      setState(() => _error = 'Escribí el servicio que querés');
+      setState(() => _error = 'Selecciona un servicio');
       return;
     }
 
@@ -78,7 +80,6 @@ class _ClienteReservarScreenState extends ConsumerState<ClienteReservarScreen> {
           fecha: fecha,
           hora: '$_horaSeleccionada:00',
           servicio: _servicio!,
-          notas: _notas,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
         ),
@@ -86,12 +87,11 @@ class _ClienteReservarScreenState extends ConsumerState<ClienteReservarScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Reserva confirmada correctamente')),
+          const SnackBar(content: Text('Reserva confirmada')),
         );
         setState(() {
           _horaSeleccionada = null;
           _servicio = null;
-          _notas = null;
         });
       }
     } catch (e) {
@@ -103,13 +103,7 @@ class _ClienteReservarScreenState extends ConsumerState<ClienteReservarScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final barberosAsync = ref.watch(barberosProvider);
     final selected = _selectedDay ?? _focusedDay;
-    final barberoSeleccionado = _barberoSeleccionadoId != null
-        ? barberosAsync.whenOrNull(
-            data: (list) => list.firstWhere((b) => b.id == _barberoSeleccionadoId, orElse: () => list.first),
-          )
-        : null;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F3EF),
@@ -124,7 +118,6 @@ class _ClienteReservarScreenState extends ConsumerState<ClienteReservarScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Calendario estilizado
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -146,84 +139,35 @@ class _ClienteReservarScreenState extends ConsumerState<ClienteReservarScreen> {
                 headerStyle: const HeaderStyle(
                   formatButtonVisible: false,
                   titleCentered: true,
-                  titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-                calendarStyle: CalendarStyle(
-                  selectedDecoration: BoxDecoration(
-                    color: Colors.amber.shade600,
-                    shape: BoxShape.circle,
-                  ),
-                  todayDecoration: BoxDecoration(
-                    color: Colors.amber.shade100,
-                    shape: BoxShape.circle,
-                  ),
                 ),
               ),
             ),
             const SizedBox(height: 24),
 
-            // Info del barbero seleccionado
-            if (barberoSeleccionado != null)
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 28,
-                      backgroundColor: Colors.grey.shade200,
-                      child: Text(barberoSeleccionado.nombre.substring(0, 1)),
+            // Barbero
+            ref.watch(barberosProvider).when(
+              data: (barberos) {
+                return DropdownButtonFormField<String>(
+                  value: _barberoSeleccionadoId,
+                  decoration: InputDecoration(
+                    labelText: 'Barbero (opcional)',
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide.none,
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            barberoSeleccionado.nombre,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                          ),
-                          Text(
-                            barberoSeleccionado.especialidad ?? 'Especialista en cortes',
-                            style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Text(
-                      '30 min',
-                      style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
-                    ),
+                  ),
+                  items: [
+                    const DropdownMenuItem(value: null, child: Text('Cualquiera disponible')),
+                    ...barberos.map((b) => DropdownMenuItem(value: b.id, child: Text(b.nombre))),
                   ],
-                ),
-              ),
-            if (barberoSeleccionado == null)
-              barberosAsync.when(
-                data: (barberos) {
-                  return DropdownButtonFormField<String>(
-                    value: _barberoSeleccionadoId,
-                    decoration: InputDecoration(
-                      labelText: 'Seleccionar Barbero',
-                      filled: true,
-                      fillColor: Colors.white,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                    items: [
-                      const DropdownMenuItem(value: null, child: Text('Cualquiera disponible')),
-                      ...barberos.map((b) => DropdownMenuItem(value: b.id, child: Text(b.nombre))),
-                    ],
-                    onChanged: (v) => setState(() => _barberoSeleccionadoId = v),
-                  );
-                },
-                loading: () => const LinearProgressIndicator(),
-                error: (_, __) => const Text('Error al cargar barberos'),
-              ),
+                  onChanged: (v) => setState(() => _barberoSeleccionadoId = v),
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (_, __) => const Text('Error al cargar barberos'),
+            ),
             const SizedBox(height: 20),
 
             // Servicio
@@ -233,7 +177,6 @@ class _ClienteReservarScreenState extends ConsumerState<ClienteReservarScreen> {
                   return TextField(
                     decoration: InputDecoration(
                       labelText: 'Servicio *',
-                      hintText: 'Ej: Corte, Barba, etc.',
                       filled: true,
                       fillColor: Colors.white,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
@@ -255,13 +198,11 @@ class _ClienteReservarScreenState extends ConsumerState<ClienteReservarScreen> {
                     );
                   }).toList(),
                   onChanged: (s) {
-                    if (s != null) {
-                      setState(() => _servicio = s.nombre);
-                    }
+                    if (s != null) setState(() => _servicio = s.nombre);
                   },
                 );
               },
-              loading: () => const LinearProgressIndicator(),
+              loading: () => const Center(child: CircularProgressIndicator()),
               error: (_, __) => TextField(
                 decoration: InputDecoration(labelText: 'Servicio *'),
                 onChanged: (v) => setState(() => _servicio = v),
@@ -269,15 +210,10 @@ class _ClienteReservarScreenState extends ConsumerState<ClienteReservarScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Horarios disponibles
+            // Horarios
             Text(
-              'Horarios disponibles',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              DateFormat('EEEE dd/MM/yyyy', 'es').format(selected),
-              style: TextStyle(color: Colors.grey.shade600),
+              'Horarios disponibles - ${DateFormat('dd/MM/yyyy').format(selected)}',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 12),
             FutureBuilder<List<String>>(
@@ -312,13 +248,9 @@ class _ClienteReservarScreenState extends ConsumerState<ClienteReservarScreen> {
                         borderRadius: BorderRadius.circular(12),
                         side: BorderSide.none,
                       ),
-                      onSelected: _loading
-                          ? null
-                          : (selected) {
-                              setState(() {
-                                _horaSeleccionada = selected ? hora : null;
-                              });
-                            },
+                      onSelected: _loading ? null : (selected) {
+                        setState(() => _horaSeleccionada = selected ? hora : null);
+                      },
                     );
                   }).toList(),
                 );
@@ -332,7 +264,6 @@ class _ClienteReservarScreenState extends ConsumerState<ClienteReservarScreen> {
                 child: Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
               ),
 
-            // Botón confirmar grande
             ElevatedButton(
               onPressed: _loading || _horaSeleccionada == null ? null : _confirmarReserva,
               style: ElevatedButton.styleFrom(
@@ -343,24 +274,9 @@ class _ClienteReservarScreenState extends ConsumerState<ClienteReservarScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
               child: _loading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                    )
-                  : const Text(
-                      'Confirmar Turno',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
+                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Text('Confirmar Turno', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ),
-            const SizedBox(height: 8),
-            Center(
-              child: Text(
-                'No se te cobrará de inmediato',
-                style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
-              ),
-            ),
-            const SizedBox(height: 32),
           ],
         ),
       ),
