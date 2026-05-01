@@ -105,62 +105,268 @@ class _ClienteReservarScreenState extends ConsumerState<ClienteReservarScreen> {
   Widget build(BuildContext context) {
     final barberosAsync = ref.watch(barberosProvider);
     final selected = _selectedDay ?? _focusedDay;
+    final barberoSeleccionado = _barberoSeleccionadoId != null
+        ? barberosAsync.whenOrNull(
+            data: (list) => list.firstWhere((b) => b.id == _barberoSeleccionadoId, orElse: () => list.first),
+          )
+        : null;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Reservar Turno')),
+      backgroundColor: const Color(0xFFF5F3EF),
+      appBar: AppBar(
+        title: const Text('Agendar Turno'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: Colors.black87,
+      ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Calendario
-            TableCalendar(
-              firstDay: DateTime.now(),
-              lastDay: DateTime.now().add(const Duration(days: 60)),
-              focusedDay: _focusedDay,
-              selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-              onDaySelected: (selectedDay, focusedDay) {
-                setState(() {
-                  _selectedDay = selectedDay;
-                  _focusedDay = focusedDay;
-                });
-              },
-              calendarFormat: CalendarFormat.month,
-              availableCalendarFormats: const {CalendarFormat.month: 'Mes'},
-              headerStyle: const HeaderStyle(formatButtonVisible: false, titleCentered: true),
+            // Calendario estilizado
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: TableCalendar(
+                firstDay: DateTime.now(),
+                lastDay: DateTime.now().add(const Duration(days: 60)),
+                focusedDay: _focusedDay,
+                selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                onDaySelected: (selectedDay, focusedDay) {
+                  setState(() {
+                    _selectedDay = selectedDay;
+                    _focusedDay = focusedDay;
+                  });
+                },
+                calendarFormat: CalendarFormat.month,
+                availableCalendarFormats: const {CalendarFormat.month: 'Mes'},
+                headerStyle: const HeaderStyle(
+                  formatButtonVisible: false,
+                  titleCentered: true,
+                  titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                calendarStyle: CalendarStyle(
+                  selectedDecoration: BoxDecoration(
+                    color: Colors.amber.shade600,
+                    shape: BoxShape.circle,
+                  ),
+                  todayDecoration: BoxDecoration(
+                    color: Colors.amber.shade100,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
 
-            // Selección de barbero
-            barberosAsync.when(
-              data: (barberos) {
-                return DropdownButtonFormField<String>(
-                  value: _barberoSeleccionadoId,
-                  decoration: const InputDecoration(labelText: 'Barbero (opcional)'),
-                  items: [
-                    const DropdownMenuItem(value: null, child: Text('Cualquiera disponible')),
-                    ...barberos.map((b) => DropdownMenuItem(value: b.id, child: Text(b.nombre))),
+            // Info del barbero seleccionado
+            if (barberoSeleccionado != null)
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 28,
+                      backgroundColor: Colors.grey.shade200,
+                      child: Text(barberoSeleccionado.nombre.substring(0, 1)),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            barberoSeleccionado.nombre,
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                          Text(
+                            barberoSeleccionado.especialidad ?? 'Especialista en cortes',
+                            style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      '30 min',
+                      style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+                    ),
                   ],
-                  onChanged: (v) => setState(() => _barberoSeleccionadoId = v),
+                ),
+              ),
+            if (barberoSeleccionado == null)
+              barberosAsync.when(
+                data: (barberos) {
+                  return DropdownButtonFormField<String>(
+                    value: _barberoSeleccionadoId,
+                    decoration: InputDecoration(
+                      labelText: 'Seleccionar Barbero',
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    items: [
+                      const DropdownMenuItem(value: null, child: Text('Cualquiera disponible')),
+                      ...barberos.map((b) => DropdownMenuItem(value: b.id, child: Text(b.nombre))),
+                    ],
+                    onChanged: (v) => setState(() => _barberoSeleccionadoId = v),
+                  );
+                },
+                loading: () => const LinearProgressIndicator(),
+                error: (_, __) => const Text('Error al cargar barberos'),
+              ),
+            const SizedBox(height: 20),
+
+            // Servicio
+            ref.watch(serviciosProvider).when(
+              data: (servicios) {
+                if (servicios.isEmpty) {
+                  return TextField(
+                    decoration: InputDecoration(
+                      labelText: 'Servicio *',
+                      hintText: 'Ej: Corte, Barba, etc.',
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                    ),
+                    onChanged: (v) => setState(() => _servicio = v),
+                  );
+                }
+                return DropdownButtonFormField<Servicio>(
+                  decoration: InputDecoration(
+                    labelText: 'Servicio *',
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                  ),
+                  items: servicios.map((s) {
+                    return DropdownMenuItem(
+                      value: s,
+                      child: Text('${s.nombre} - \$${s.precio.toStringAsFixed(0)}'),
+                    );
+                  }).toList(),
+                  onChanged: (s) {
+                    if (s != null) {
+                      setState(() => _servicio = s.nombre);
+                    }
+                  },
                 );
               },
               loading: () => const LinearProgressIndicator(),
-              error: (_, __) => const Text('Error al cargar barberos'),
+              error: (_, __) => TextField(
+                decoration: InputDecoration(labelText: 'Servicio *'),
+                onChanged: (v) => setState(() => _servicio = v),
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
 
-              // Servicio
-              ref.watch(serviciosProvider).when(
-                data: (servicios) {
-                  if (servicios.isEmpty) {
-                    return TextField(
-                      decoration: const InputDecoration(
-                        labelText: 'Servicio *',
-                        hintText: 'Ej: Corte, Barba, etc.',
+            // Horarios disponibles
+            Text(
+              'Horarios disponibles',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              DateFormat('EEEE dd/MM/yyyy', 'es').format(selected),
+              style: TextStyle(color: Colors.grey.shade600),
+            ),
+            const SizedBox(height: 12),
+            FutureBuilder<List<String>>(
+              future: _getHorariosOcupados(selected, _barberoSeleccionadoId),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                final ocupados = snapshot.data ?? [];
+                final disponibles = _horariosDisponibles.where((h) => !ocupados.contains(h)).toList();
+
+                if (disponibles.isEmpty) {
+                  return const Center(child: Text('No hay horarios disponibles'));
+                }
+
+                return Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: disponibles.map((hora) {
+                    final seleccionado = _horaSeleccionada == hora;
+                    return ChoiceChip(
+                      label: Text(hora),
+                      selected: seleccionado,
+                      selectedColor: Colors.amber.shade200,
+                      backgroundColor: Colors.white,
+                      labelStyle: TextStyle(
+                        color: seleccionado ? Colors.amber.shade900 : Colors.grey.shade700,
+                        fontWeight: seleccionado ? FontWeight.bold : FontWeight.normal,
                       ),
-                      onChanged: (v) => setState(() => _servicio = v),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide.none,
+                      ),
+                      onSelected: _loading
+                          ? null
+                          : (selected) {
+                              setState(() {
+                                _horaSeleccionada = selected ? hora : null;
+                              });
+                            },
                     );
-                  }
+                  }).toList(),
+                );
+              },
+            ),
+            const SizedBox(height: 32),
+
+            if (_error != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              ),
+
+            // Botón confirmar grande
+            ElevatedButton(
+              onPressed: _loading || _horaSeleccionada == null ? null : _confirmarReserva,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.amber.shade600,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              ),
+              child: _loading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Text(
+                      'Confirmar Turno',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: Text(
+                'No se te cobrará de inmediato',
+                style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+              ),
+            ),
+            const SizedBox(height: 32),
+          ],
+        ),
+      ),
+    );
+  }
+}
                   return DropdownButtonFormField<Servicio>(
                     decoration: const InputDecoration(labelText: 'Servicio *'),
                     items: servicios.map((s) {

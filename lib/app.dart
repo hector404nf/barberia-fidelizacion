@@ -25,6 +25,7 @@ import 'modules/barberos/screens/barberos_list_screen.dart';
 import 'modules/barberos/screens/barbero_form_screen.dart';
 import 'modules/servicios/screens/servicios_list_screen.dart';
 import 'modules/servicios/screens/servicio_form_screen.dart';
+import 'modules/cliente_portal/screens/cliente_landing_screen.dart';
 import 'modules/cliente_portal/screens/cliente_portal_screen.dart';
 import 'modules/cliente_portal/screens/cliente_visitas_screen.dart';
 import 'modules/cliente_portal/screens/cliente_reservar_screen.dart';
@@ -38,10 +39,12 @@ final _router = GoRouter(
     // Lee directamente la URL del navegador (funciona en web)
     final currentPath = Uri.base.path;
 
-    // Rutas públicas: cliente (/b/:slug) y auth general
-    if (currentPath.startsWith('/b/') ||
-        currentPath == '/' ||
-        currentPath == '/registro') {
+    // Rutas públicas
+    if (currentPath == '/' ||
+        currentPath == '/registro' ||
+        RegExp(r'^/b/[^/]+$').hasMatch(currentPath) ||
+        RegExp(r'^/b/[^/]+/login$').hasMatch(currentPath) ||
+        RegExp(r'^/b/[^/]+/registro$').hasMatch(currentPath)) {
       return null;
     }
 
@@ -61,6 +64,12 @@ final _router = GoRouter(
     // === CLIENTE PÚBLICO CON SLUG ===
     GoRoute(
       path: '/b/:slug',
+      builder: (context, state) => ClienteLandingScreen(
+        slug: state.pathParameters['slug']!,
+      ),
+    ),
+    GoRoute(
+      path: '/b/:slug/login',
       builder: (context, state) => ClienteLoginScreen(
         slug: state.pathParameters['slug']!,
       ),
