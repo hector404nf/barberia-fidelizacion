@@ -149,22 +149,30 @@ class ScaffoldWithNav extends ConsumerWidget {
                   context.go('/barberos');
                 },
               ),
-              _MenuItem(
-                icon: Icons.history,
-                label: 'Historial de Visitas',
-                onTap: () {
-                  Navigator.pop(context);
-                  context.go('/visitas');
-                },
-              ),
-              _MenuItem(
-                icon: Icons.settings_outlined,
-                label: 'Configuración',
-                onTap: () {
-                  Navigator.pop(context);
-                  context.go('/config');
-                },
-              ),
+    _MenuItem(
+      icon: Icons.history,
+      label: 'Historial de Visitas',
+      onTap: () {
+        Navigator.pop(context);
+        context.go('/visitas');
+      },
+    ),
+    _MenuItem(
+      icon: Icons.history_edu,
+      label: 'Histórico de Reservas',
+      onTap: () {
+        Navigator.pop(context);
+        context.go('/historico');
+      },
+    ),
+    _MenuItem(
+      icon: Icons.settings_outlined,
+      label: 'Configuración',
+      onTap: () {
+        Navigator.pop(context);
+        context.go('/config');
+      },
+    ),
               const Divider(height: 32),
               _MenuItem(
                 icon: Icons.logout,
