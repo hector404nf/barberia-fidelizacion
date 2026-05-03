@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ScaffoldClienteNav extends ConsumerWidget {
   final Widget child;
@@ -12,8 +13,8 @@ class ScaffoldClienteNav extends ConsumerWidget {
 
     int currentIndex = 0;
     if (location == '/cliente') currentIndex = 0;
-    else if (location == '/cliente/visitas') currentIndex = 1;
-    else if (location == '/cliente/reservar') currentIndex = 2;
+    else if (location == '/cliente/reservar') currentIndex = 1;
+    else if (location == '/cliente/visitas') currentIndex = 2;
     else if (location == '/cliente/recompensas') currentIndex = 3;
 
     return Scaffold(
@@ -29,13 +30,13 @@ class ScaffoldClienteNav extends ConsumerWidget {
               context.go('/cliente');
               break;
             case 1:
-              context.go('/cliente/visitas');
-              break;
-            case 2:
               context.go('/cliente/reservar');
               break;
+            case 2:
+              context.go('/cliente/visitas');
+              break;
             case 3:
-              context.go('/cliente/recompensas');
+              _showMoreMenu(context);
               break;
           }
         },
@@ -46,22 +47,117 @@ class ScaffoldClienteNav extends ConsumerWidget {
             label: 'Inicio',
           ),
           NavigationDestination(
-            icon: Icon(Icons.cut_outlined),
-            selectedIcon: Icon(Icons.cut),
-            label: 'Mis Visitas',
-          ),
-          NavigationDestination(
             icon: Icon(Icons.calendar_today_outlined),
             selectedIcon: Icon(Icons.calendar_today),
             label: 'Reservar',
           ),
           NavigationDestination(
-            icon: Icon(Icons.emoji_events_outlined),
-            selectedIcon: Icon(Icons.emoji_events),
-            label: 'Recompensas',
+            icon: Icon(Icons.cut_outlined),
+            selectedIcon: Icon(Icons.cut),
+            label: 'Visitas',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.more_horiz),
+            selectedIcon: Icon(Icons.more_horiz),
+            label: 'Más',
           ),
         ],
       ),
+    );
+  }
+
+  void _showMoreMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        child: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Más opciones',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              _MenuItem(
+                icon: Icons.emoji_events_outlined,
+                label: 'Recompensas',
+                onTap: () {
+                  Navigator.pop(context);
+                  context.go('/cliente/recompensas');
+                },
+              ),
+              const Divider(height: 32),
+              _MenuItem(
+                icon: Icons.logout,
+                label: 'Cerrar sesión',
+                iconColor: Colors.red.shade400,
+                textColor: Colors.red.shade400,
+                onTap: () async {
+                  Navigator.pop(context);
+                  await Supabase.instance.client.auth.signOut();
+                  if (context.mounted) context.go('/');
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MenuItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final Color? iconColor;
+  final Color? textColor;
+
+  const _MenuItem({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.iconColor,
+    this.textColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: (iconColor ?? Colors.amber.shade700).withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(icon, color: iconColor ?? Colors.amber.shade700),
+      ),
+      title: Text(
+        label,
+        style: TextStyle(fontWeight: FontWeight.w600, color: textColor ?? Colors.black87),
+      ),
+      onTap: onTap,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     );
   }
 }
