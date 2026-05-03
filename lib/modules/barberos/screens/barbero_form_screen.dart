@@ -99,37 +99,79 @@ class _BarberoFormScreenState extends ConsumerState<BarberoFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F3EF),
       appBar: AppBar(
-        title: Text(widget.barberoId != null ? 'Editar Barbero' : 'Nuevo Barbero'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: Colors.black87,
+        title: Text(widget.barberoId != null ? 'Editar Barbero' : 'Nuevo Barbero', style: const TextStyle(fontWeight: FontWeight.bold)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            TextField(
-              controller: _nombreController,
-              decoration: const InputDecoration(labelText: 'Nombre *'),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _especialidadController,
-              decoration: const InputDecoration(
-                labelText: 'Especialidad',
-                hintText: 'Ej: Cortes modernos, barbas...',
+            Card(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              elevation: 0,
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildTextField(controller: _nombreController, label: 'Nombre *', icon: Icons.person_outline),
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      controller: _especialidadController,
+                      label: 'Especialidad',
+                      icon: Icons.star_outline,
+                    ),
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 24),
             if (_error != null)
-              Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Text(_error!, style: const TextStyle(color: Colors.red)),
+              ),
             ElevatedButton(
               onPressed: _loading ? null : _guardar,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.amber.shade600,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              ),
               child: _loading
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                  : Text(widget.barberoId != null ? 'Guardar cambios' : 'Crear barbero'),
+                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : Text(widget.barberoId != null ? 'Guardar cambios' : 'Crear barbero', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+  }) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: Colors.grey.shade500),
+        filled: true,
+        fillColor: Colors.grey.shade50,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
     );
   }

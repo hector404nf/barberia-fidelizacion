@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../models/recompensa.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/recompensas_provider.dart';
@@ -18,8 +16,12 @@ class RecompensasScreen extends ConsumerWidget {
     );
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F3EF),
       appBar: AppBar(
-        title: const Text('Recompensas'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: Colors.black87,
+        title: const Text('Recompensas', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           if (esDueno)
             IconButton(
@@ -32,7 +34,16 @@ class RecompensasScreen extends ConsumerWidget {
       body: recompensasAsync.when(
         data: (recompensas) {
           if (recompensas.isEmpty) {
-            return const Center(child: Text('No hay recompensas configuradas'));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.emoji_events_outlined, size: 64, color: Colors.grey.shade400),
+                  const SizedBox(height: 16),
+                  Text('No hay recompensas configuradas', style: TextStyle(color: Colors.grey.shade600, fontSize: 16)),
+                ],
+              ),
+            );
           }
           return ListView.builder(
             padding: const EdgeInsets.all(16),
@@ -78,46 +89,46 @@ class _RecompensaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = recompensa.activa
-        ? Theme.of(context).colorScheme.primaryContainer
-        : Theme.of(context).colorScheme.surfaceContainerHighest;
-
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      color: color,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      elevation: 0,
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(
-                  _iconoPorTipo(recompensa.tipo),
-                  color: recompensa.activa
-                      ? Theme.of(context).colorScheme.primary
-                      : Colors.grey,
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: recompensa.activa ? Colors.amber.shade100 : Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(
+                    _iconoPorTipo(recompensa.tipo),
+                    color: recompensa.activa ? Colors.amber.shade700 : Colors.grey.shade500,
+                  ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         recompensa.nombre,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              decoration: recompensa.activa
-                                  ? null
-                                  : TextDecoration.lineThrough,
-                            ),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          decoration: recompensa.activa ? null : TextDecoration.lineThrough,
+                          color: recompensa.activa ? Colors.black87 : Colors.grey.shade500,
+                        ),
                       ),
                       Text(
                         '${recompensa.puntosRequeridos} puntos',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.secondary,
-                              fontWeight: FontWeight.w600,
-                            ),
+                        style: TextStyle(color: Colors.amber.shade700, fontWeight: FontWeight.w600, fontSize: 14),
                       ),
                     ],
                   ),
@@ -129,9 +140,7 @@ class _RecompensaCard extends StatelessWidget {
                   ),
                   IconButton(
                     icon: Icon(
-                      recompensa.activa
-                          ? Icons.visibility_off
-                          : Icons.visibility,
+                      recompensa.activa ? Icons.visibility_off : Icons.visibility,
                       size: 20,
                     ),
                     onPressed: onToggle,
@@ -144,7 +153,7 @@ class _RecompensaCard extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 8),
                 child: Text(
                   'Valor: ${recompensa.valor}',
-                  style: Theme.of(context).textTheme.bodySmall,
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
                 ),
               ),
             if (recompensa.stockLimitado)
@@ -152,20 +161,20 @@ class _RecompensaCard extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
                   'Stock: ${recompensa.stockActual ?? 0}',
-                  style: Theme.of(context).textTheme.bodySmall,
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
                 ),
               ),
             if (!recompensa.activa)
               Container(
                 margin: const EdgeInsets.only(top: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade700,
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Text(
                   'INACTIVA',
-                  style: TextStyle(color: Colors.white, fontSize: 10),
+                  style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600),
                 ),
               ),
           ],
@@ -177,11 +186,11 @@ class _RecompensaCard extends StatelessWidget {
   IconData _iconoPorTipo(String tipo) {
     switch (tipo) {
       case 'descuento':
-        return PhosphorIconsRegular.percent;
+        return Icons.percent;
       case 'producto':
-        return PhosphorIconsRegular.package;
+        return Icons.card_giftcard;
       default:
-        return PhosphorIconsRegular.scissors;
+        return Icons.emoji_events;
     }
   }
 }

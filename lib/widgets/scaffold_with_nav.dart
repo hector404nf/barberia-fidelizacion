@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../providers/auth_provider.dart';
 
 class ScaffoldWithNav extends ConsumerWidget {
@@ -22,8 +21,11 @@ class ScaffoldWithNav extends ConsumerWidget {
     else if (location.startsWith('/config')) currentIndex = 5;
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F3EF),
       body: child,
       bottomNavigationBar: NavigationBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
         selectedIndex: currentIndex,
         onDestinationSelected: (index) {
           switch (index) {
@@ -49,27 +51,33 @@ class ScaffoldWithNav extends ConsumerWidget {
         },
         destinations: [
           const NavigationDestination(
-            icon: Icon(PhosphorIconsRegular.chartBar),
+            icon: Icon(Icons.bar_chart_outlined),
+            selectedIcon: Icon(Icons.bar_chart),
             label: 'Dashboard',
           ),
           const NavigationDestination(
-            icon: Icon(PhosphorIconsRegular.users),
+            icon: Icon(Icons.people_outline),
+            selectedIcon: Icon(Icons.people),
             label: 'Clientes',
           ),
           const NavigationDestination(
-            icon: Icon(PhosphorIconsRegular.scissors),
+            icon: Icon(Icons.cut_outlined),
+            selectedIcon: Icon(Icons.cut),
             label: 'Servicios',
           ),
           const NavigationDestination(
-            icon: Icon(PhosphorIconsRegular.calendarBlank),
+            icon: Icon(Icons.calendar_today_outlined),
+            selectedIcon: Icon(Icons.calendar_today),
             label: 'Agenda',
           ),
           const NavigationDestination(
-            icon: Icon(PhosphorIconsRegular.trophy),
+            icon: Icon(Icons.emoji_events_outlined),
+            selectedIcon: Icon(Icons.emoji_events),
             label: 'Recompensas',
           ),
           NavigationDestination(
-            icon: const Icon(PhosphorIconsRegular.gear),
+            icon: const Icon(Icons.settings_outlined),
+            selectedIcon: const Icon(Icons.settings),
             label: esDueno ? 'Config' : 'Perfil',
           ),
         ],

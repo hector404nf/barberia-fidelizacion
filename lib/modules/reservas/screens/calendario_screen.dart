@@ -23,37 +23,72 @@ class _CalendarioScreenState extends ConsumerState<CalendarioScreen> {
     final reservasAsync = ref.watch(reservasPorFechaProvider(selected));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Agenda')),
+      backgroundColor: const Color(0xFFF5F3EF),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: Colors.black87,
+        title: const Text('Agenda', style: TextStyle(fontWeight: FontWeight.bold)),
+      ),
       body: Column(
         children: [
-          TableCalendar(
-            firstDay: DateTime.now().subtract(const Duration(days: 365)),
-            lastDay: DateTime.now().add(const Duration(days: 365)),
-            focusedDay: _focusedDay,
-            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-            onDaySelected: (selectedDay, focusedDay) {
-              setState(() {
-                _selectedDay = selectedDay;
-                _focusedDay = focusedDay;
-              });
-            },
-            calendarFormat: CalendarFormat.month,
-            availableCalendarFormats: const {
-              CalendarFormat.month: 'Mes',
-            },
-            headerStyle: const HeaderStyle(
-              formatButtonVisible: false,
-              titleCentered: true,
+          Card(
+            margin: const EdgeInsets.symmetric(horizontal: 16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            elevation: 0,
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: TableCalendar(
+                firstDay: DateTime.now().subtract(const Duration(days: 365)),
+                lastDay: DateTime.now().add(const Duration(days: 365)),
+                focusedDay: _focusedDay,
+                selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
+                onDaySelected: (selectedDay, focusedDay) {
+                  setState(() {
+                    _selectedDay = selectedDay;
+                    _focusedDay = focusedDay;
+                  });
+                },
+                calendarFormat: CalendarFormat.month,
+                availableCalendarFormats: const {
+                  CalendarFormat.month: 'Mes',
+                },
+                headerStyle: const HeaderStyle(
+                  formatButtonVisible: false,
+                  titleCentered: true,
+                ),
+                calendarStyle: CalendarStyle(
+                  selectedDecoration: BoxDecoration(
+                    color: Colors.amber.shade600,
+                    shape: BoxShape.circle,
+                  ),
+                  todayDecoration: BoxDecoration(
+                    color: Colors.amber.shade100,
+                    shape: BoxShape.circle,
+                  ),
+                  todayTextStyle: TextStyle(color: Colors.amber.shade800, fontWeight: FontWeight.bold),
+                ),
+              ),
             ),
           ),
-          const Divider(),
+          const SizedBox(height: 12),
           Expanded(
             child: reservasAsync.when(
               data: (reservas) {
                 if (reservas.isEmpty) {
-                  return const Center(child: Text('No hay reservas para este día'));
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.calendar_today_outlined, size: 64, color: Colors.grey.shade400),
+                        const SizedBox(height: 16),
+                        Text('No hay reservas para este día', style: TextStyle(color: Colors.grey.shade600, fontSize: 16)),
+                      ],
+                    ),
+                  );
                 }
                 return ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: reservas.length,
                   itemBuilder: (context, index) {
                     final r = reservas[index];
@@ -74,8 +109,9 @@ class _CalendarioScreenState extends ConsumerState<CalendarioScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.amber.shade600,
         onPressed: () => context.push('/agenda/nueva'),
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
@@ -96,20 +132,39 @@ class _ReservaTile extends StatelessWidget {
     final puedeAccionar = reserva.estado == 'pendiente';
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      elevation: 0,
       child: Column(
         children: [
           ListTile(
-            leading: CircleAvatar(
-              backgroundColor: color.withOpacity(0.2),
-              child: Text(reserva.hora.substring(0, 5), style: TextStyle(color: color, fontSize: 12)),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            leading: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Center(
+                child: Text(
+                  reserva.hora.substring(0, 5),
+                  style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold),
+                ),
+              ),
             ),
-            title: Text(reserva.servicio),
-            subtitle: Text('Cliente: ${reserva.clienteId.substring(0, 8)}...'),
-            trailing: Chip(
-              label: Text(reserva.estado, style: const TextStyle(fontSize: 10)),
-              backgroundColor: color.withOpacity(0.2),
-              side: BorderSide.none,
+            title: Text(reserva.servicio, style: const TextStyle(fontWeight: FontWeight.w600)),
+            subtitle: Text('Cliente: ${reserva.clienteId.substring(0, 8)}...', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+            trailing: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                reserva.estado,
+                style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600),
+              ),
             ),
           ),
           if (puedeAccionar)
@@ -123,8 +178,11 @@ class _ReservaTile extends StatelessWidget {
                       icon: const Icon(Icons.check, size: 16),
                       label: const Text('Completar', style: TextStyle(fontSize: 12)),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
+                        backgroundColor: Colors.green.shade600,
                         foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
                       ),
                     ),
                   ),
@@ -135,7 +193,10 @@ class _ReservaTile extends StatelessWidget {
                       icon: const Icon(Icons.cancel, size: 16),
                       label: const Text('Cancelar', style: TextStyle(fontSize: 12)),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.red,
+                        foregroundColor: Colors.red.shade600,
+                        side: BorderSide(color: Colors.red.shade200),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
                       ),
                     ),
                   ),
@@ -146,7 +207,10 @@ class _ReservaTile extends StatelessWidget {
                       icon: const Icon(Icons.person_off, size: 16),
                       label: const Text('No Show', style: TextStyle(fontSize: 12)),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.orange,
+                        foregroundColor: Colors.orange.shade700,
+                        side: BorderSide(color: Colors.orange.shade200),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
                       ),
                     ),
                   ),
@@ -161,13 +225,13 @@ class _ReservaTile extends StatelessWidget {
   Color _colorPorEstado(String estado) {
     switch (estado) {
       case 'completada':
-        return Colors.green;
+        return Colors.green.shade600;
       case 'cancelada':
-        return Colors.red;
+        return Colors.red.shade600;
       case 'no_show':
-        return Colors.orange;
+        return Colors.orange.shade700;
       default:
-        return Colors.blue;
+        return Colors.blue.shade600;
     }
   }
 }

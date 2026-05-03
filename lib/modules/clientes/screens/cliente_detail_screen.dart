@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../providers/clientes_provider.dart';
-import '../../../repositories/visita_repository.dart';
 import '../../../widgets/estado_chip.dart';
 
 class ClienteDetailScreen extends ConsumerWidget {
@@ -14,8 +13,12 @@ class ClienteDetailScreen extends ConsumerWidget {
     final clienteAsync = ref.watch(clienteDetailProvider(clienteId));
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F3EF),
       appBar: AppBar(
-        title: const Text('Detalle Cliente'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: Colors.black87,
+        title: const Text('Detalle Cliente', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
@@ -32,8 +35,10 @@ class ClienteDetailScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Card(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  elevation: 0,
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -41,16 +46,19 @@ class ClienteDetailScreen extends ConsumerWidget {
                           children: [
                             CircleAvatar(
                               radius: 32,
-                              child: Text(cliente.nombre.substring(0, 1).toUpperCase(),
-                                  style: const TextStyle(fontSize: 28)),
+                              backgroundColor: Colors.amber.shade100,
+                              child: Text(
+                                cliente.nombre.substring(0, 1).toUpperCase(),
+                                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.amber.shade800),
+                              ),
                             ),
                             const SizedBox(width: 16),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(cliente.nombre, style: Theme.of(context).textTheme.titleLarge),
-                                  Text(cliente.telefono, style: Theme.of(context).textTheme.bodyMedium),
+                                  Text(cliente.nombre, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                                  Text(cliente.telefono, style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
                                   const SizedBox(height: 4),
                                   EstadoChip(estado: cliente.estado),
                                 ],
@@ -58,7 +66,7 @@ class ClienteDetailScreen extends ConsumerWidget {
                             ),
                           ],
                         ),
-                        const Divider(height: 24),
+                        const Divider(height: 32),
                         _InfoRow(label: 'Total visitas', value: '${cliente.totalVisitas}'),
                         if (cliente.frecuenciaVisitas != null)
                           _InfoRow(label: 'Frecuencia', value: 'Cada ${cliente.frecuenciaVisitas} días'),
@@ -76,6 +84,13 @@ class ClienteDetailScreen extends ConsumerWidget {
                         onPressed: () => context.push('/visitas/nueva?clienteId=$clienteId'),
                         icon: const Icon(Icons.add),
                         label: const Text('Nueva Visita'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.amber.shade600,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -84,6 +99,13 @@ class ClienteDetailScreen extends ConsumerWidget {
                         onPressed: () => context.push('/agenda/nueva?clienteId=$clienteId'),
                         icon: const Icon(Icons.calendar_today),
                         label: const Text('Nueva Reserva'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.amber.shade700,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        ),
                       ),
                     ),
                   ],
@@ -109,12 +131,12 @@ class _InfoRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey)),
-          Text(value, style: Theme.of(context).textTheme.bodyLarge),
+          Text(label, style: TextStyle(fontSize: 14, color: Colors.grey.shade600)),
+          Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
         ],
       ),
     );

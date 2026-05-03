@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import '../../../models/cliente.dart';
 import '../../../models/servicio.dart';
 import '../../../models/visita.dart';
@@ -115,7 +114,7 @@ class _NuevaVisitaScreenState extends ConsumerState<NuevaVisitaScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Visita registrada correctamente')),
+          const SnackBar(content: Text('Visita registrada correctamente'), backgroundColor: Colors.green),
         );
         context.go('/clientes/${_clienteSeleccionado!.id}');
       }
@@ -132,29 +131,23 @@ class _NuevaVisitaScreenState extends ConsumerState<NuevaVisitaScreen> {
     final barberosAsync = ref.watch(barberosProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Nueva Visita')),
+      backgroundColor: const Color(0xFFF5F3EF),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: Colors.black87,
+        title: const Text('Nueva Visita', style: TextStyle(fontWeight: FontWeight.bold)),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // --- Buscar cliente ---
             if (_clienteSeleccionado == null) ...[
-              TextField(
+              _buildTextField(
                 controller: _searchController,
-                decoration: InputDecoration(
-                  labelText: 'Buscar cliente (nombre o teléfono)',
-                  prefixIcon: const Icon(Icons.search),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() => _clientesBusqueda = []);
-                          },
-                        )
-                      : null,
-                ),
+                label: 'Buscar cliente (nombre o teléfono)',
+                icon: Icons.search,
                 onChanged: _buscarClientes,
               ),
               const SizedBox(height: 8),
@@ -162,6 +155,8 @@ class _NuevaVisitaScreenState extends ConsumerState<NuevaVisitaScreen> {
                 const Center(child: CircularProgressIndicator())
               else if (_clientesBusqueda.isNotEmpty)
                 Card(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  elevation: 0,
                   child: ListView.separated(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
@@ -170,10 +165,13 @@ class _NuevaVisitaScreenState extends ConsumerState<NuevaVisitaScreen> {
                     itemBuilder: (context, index) {
                       final c = _clientesBusqueda[index];
                       return ListTile(
-                        leading: CircleAvatar(child: Text(c.nombre[0])),
-                        title: Text(c.nombre),
-                        subtitle: Text(c.telefono),
-                        trailing: Text('${c.totalVisitas} visitas'),
+                        leading: CircleAvatar(
+                          backgroundColor: Colors.amber.shade100,
+                          child: Text(c.nombre[0], style: TextStyle(color: Colors.amber.shade800, fontWeight: FontWeight.bold)),
+                        ),
+                        title: Text(c.nombre, style: const TextStyle(fontWeight: FontWeight.w600)),
+                        subtitle: Text(c.telefono, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                        trailing: Text('${c.totalVisitas} visitas', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
                         onTap: () => setState(() {
                           _clienteSeleccionado = c;
                           _clientesBusqueda = [];
@@ -188,17 +186,18 @@ class _NuevaVisitaScreenState extends ConsumerState<NuevaVisitaScreen> {
                   child: Text('No se encontraron clientes', textAlign: TextAlign.center),
                 ),
             ] else ...[
-              // Cliente seleccionado
               Card(
-                color: Theme.of(context).colorScheme.primaryContainer,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                elevation: 0,
+                color: Colors.amber.shade50,
                 child: ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    backgroundColor: Colors.amber.shade600,
                     foregroundColor: Colors.white,
                     child: Text(_clienteSeleccionado!.nombre[0]),
                   ),
-                  title: Text(_clienteSeleccionado!.nombre),
-                  subtitle: Text(_clienteSeleccionado!.telefono),
+                  title: Text(_clienteSeleccionado!.nombre, style: const TextStyle(fontWeight: FontWeight.w600)),
+                  subtitle: Text(_clienteSeleccionado!.telefono, style: TextStyle(color: Colors.grey.shade700)),
                   trailing: IconButton(
                     icon: const Icon(Icons.close),
                     onPressed: () => setState(() => _clienteSeleccionado = null),
@@ -207,172 +206,196 @@ class _NuevaVisitaScreenState extends ConsumerState<NuevaVisitaScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Barbero
-              barberosAsync.when(
-                data: (barberos) {
-                  if (barberos.isEmpty) return const Text('No hay barberos activos');
-                  return DropdownButtonFormField<String>(
-                    value: _barberoSeleccionadoId,
-                    decoration: const InputDecoration(labelText: 'Barbero'),
-                    items: barberos.map((b) {
-                      return DropdownMenuItem(
-                        value: b.id,
-                        child: Text(b.nombre + (b.especialidad != null ? ' - ${b.especialidad}' : '')),
-                      );
-                    }).toList(),
-                    onChanged: (v) => setState(() => _barberoSeleccionadoId = v),
-                  );
-                },
-                loading: () => const LinearProgressIndicator(),
-                error: (_, __) => const Text('Error al cargar barberos'),
-              ),
-              const SizedBox(height: 16),
+              Card(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                elevation: 0,
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      barberosAsync.when(
+                        data: (barberos) {
+                          if (barberos.isEmpty) return const Text('No hay barberos activos');
+                          return DropdownButtonFormField<String>(
+                            value: _barberoSeleccionadoId,
+                            decoration: InputDecoration(
+                              labelText: 'Barbero',
+                              prefixIcon: Icon(Icons.cut, color: Colors.grey.shade500),
+                              filled: true,
+                              fillColor: Colors.grey.shade50,
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                            ),
+                            items: barberos.map((b) {
+                              return DropdownMenuItem(
+                                value: b.id,
+                                child: Text(b.nombre + (b.especialidad != null ? ' - ${b.especialidad}' : '')),
+                              );
+                            }).toList(),
+                            onChanged: (v) => setState(() => _barberoSeleccionadoId = v),
+                          );
+                        },
+                        loading: () => const LinearProgressIndicator(),
+                        error: (_, __) => const Text('Error al cargar barberos'),
+                      ),
+                      const SizedBox(height: 16),
 
-              // Servicio
-              ref.watch(serviciosProvider).when(
-                data: (servicios) {
-                  if (servicios.isEmpty) {
-                    return Column(
-                      children: [
-                        TextField(
-                          controller: _servicioController,
-                          decoration: const InputDecoration(
-                            labelText: 'Servicio *',
-                            hintText: 'Ej: Corte + Barba',
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        TextField(
-                          controller: _montoController,
-                          decoration: const InputDecoration(
-                            labelText: 'Monto *',
-                            prefixText: '\$',
-                          ),
-                          keyboardType: TextInputType.number,
-                          onChanged: (_) => setState(() {}),
-                        ),
-                      ],
-                    );
-                  }
-                  return DropdownButtonFormField<Servicio>(
-                    decoration: const InputDecoration(labelText: 'Servicio *'),
-                    items: servicios.map((s) {
-                      return DropdownMenuItem(
-                        value: s,
-                        child: Text('${s.nombre} - \$${s.precio.toStringAsFixed(0)}'),
-                      );
-                    }).toList(),
-                    onChanged: (s) {
-                      if (s != null) {
-                        setState(() {
-                          _servicioController.text = s.nombre;
-                          _montoController.text = s.precio.toString();
-                        });
-                      }
-                    },
-                  );
-                },
-                loading: () => const LinearProgressIndicator(),
-                error: (_, __) => Column(
-                  children: [
-                    TextField(
-                      controller: _servicioController,
-                      decoration: const InputDecoration(labelText: 'Servicio *'),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _montoController,
-                      decoration: const InputDecoration(labelText: 'Monto *', prefixText: '\$'),
-                      keyboardType: TextInputType.number,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Monto
-              TextField(
-                controller: _montoController,
-                decoration: const InputDecoration(
-                  labelText: 'Monto *',
-                  prefixText: '\$',
-                ),
-                keyboardType: TextInputType.number,
-                onChanged: (_) => setState(() {}),
-              ),
-              const SizedBox(height: 16),
-
-              // Preview de puntos
-              configAsync.when(
-                data: (config) {
-                  final puntos = _calcularPuntos(config);
-                  return Card(
-                    color: Theme.of(context).colorScheme.secondaryContainer,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        children: [
-                          Icon(PhosphorIconsFill.trophy,
-                              color: Theme.of(context).colorScheme.secondary),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                      ref.watch(serviciosProvider).when(
+                        data: (servicios) {
+                          if (servicios.isEmpty) {
+                            return Column(
                               children: [
-                                Text('Puntos a otorgar',
-                                    style: Theme.of(context).textTheme.bodyMedium),
-                                Text('$puntos puntos',
-                                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                          color: Theme.of(context).colorScheme.secondary,
-                                          fontWeight: FontWeight.bold,
-                                        )),
+                                _buildTextField(controller: _servicioController, label: 'Servicio *', icon: Icons.spa_outlined),
+                                const SizedBox(height: 16),
+                                _buildTextField(
+                                  controller: _montoController,
+                                  label: 'Monto *',
+                                  icon: Icons.attach_money_outlined,
+                                  keyboardType: TextInputType.number,
+                                  onChanged: (_) => setState(() {}),
+                                ),
+                              ],
+                            );
+                          }
+                          return DropdownButtonFormField<Servicio>(
+                            decoration: InputDecoration(
+                              labelText: 'Servicio *',
+                              prefixIcon: Icon(Icons.spa_outlined, color: Colors.grey.shade500),
+                              filled: true,
+                              fillColor: Colors.grey.shade50,
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
+                            ),
+                            items: servicios.map((s) {
+                              return DropdownMenuItem(
+                                value: s,
+                                child: Text('${s.nombre} - \$${s.precio.toStringAsFixed(0)}'),
+                              );
+                            }).toList(),
+                            onChanged: (s) {
+                              if (s != null) {
+                                setState(() {
+                                  _servicioController.text = s.nombre;
+                                  _montoController.text = s.precio.toString();
+                                });
+                              }
+                            },
+                          );
+                        },
+                        loading: () => const LinearProgressIndicator(),
+                        error: (_, __) => Column(
+                          children: [
+                            _buildTextField(controller: _servicioController, label: 'Servicio *', icon: Icons.spa_outlined),
+                            const SizedBox(height: 16),
+                            _buildTextField(controller: _montoController, label: 'Monto *', icon: Icons.attach_money_outlined, keyboardType: TextInputType.number),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      _buildTextField(
+                        controller: _montoController,
+                        label: 'Monto *',
+                        icon: Icons.attach_money_outlined,
+                        keyboardType: TextInputType.number,
+                        onChanged: (_) => setState(() {}),
+                      ),
+                      const SizedBox(height: 16),
+
+                      configAsync.when(
+                        data: (config) {
+                          final puntos = _calcularPuntos(config);
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: Colors.amber.shade50,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              children: [
+                                Icon(Icons.emoji_events, color: Colors.amber.shade700),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Puntos a otorgar', style: TextStyle(fontSize: 13, color: Colors.grey.shade700)),
+                                      Text('$puntos puntos', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.amber.shade800)),
+                                    ],
+                                  ),
+                                ),
                               ],
                             ),
-                          ),
-                        ],
+                          );
+                        },
+                        loading: () => const LinearProgressIndicator(),
+                        error: (_, __) => const SizedBox.shrink(),
                       ),
-                    ),
-                  );
-                },
-                loading: () => const LinearProgressIndicator(),
-                error: (_, __) => const SizedBox.shrink(),
-              ),
-              const SizedBox(height: 16),
+                      const SizedBox(height: 16),
 
-              // Notas
-              TextField(
-                controller: _notasController,
-                decoration: const InputDecoration(
-                  labelText: 'Notas (opcional)',
-                  hintText: 'Detalles adicionales...',
+                      _buildTextField(
+                        controller: _notasController,
+                        label: 'Notas (opcional)',
+                        icon: Icons.notes_outlined,
+                        maxLines: 3,
+                      ),
+                    ],
+                  ),
                 ),
-                maxLines: 3,
               ),
               const SizedBox(height: 24),
 
               if (_error != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16),
-                  child: Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                  child: Text(_error!, style: const TextStyle(color: Colors.red)),
                 ),
 
               ElevatedButton.icon(
                 onPressed: _loading ? null : _guardar,
                 icon: _loading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                      )
+                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                     : const Icon(Icons.check),
-                label: Text(_loading ? 'Guardando...' : 'Registrar Visita'),
+                label: Text(_loading ? 'Guardando...' : 'Registrar Visita', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.amber.shade600,
+                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 16),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
               ),
             ],
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    bool obscureText = false,
+    TextInputType? keyboardType,
+    int maxLines = 1,
+    void Function(String)? onChanged,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      maxLines: maxLines,
+      onChanged: onChanged,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: Colors.grey.shade500),
+        filled: true,
+        fillColor: Colors.grey.shade50,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
     );
   }

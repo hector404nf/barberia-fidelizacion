@@ -13,17 +13,22 @@ class ClientesListScreen extends ConsumerWidget {
     final searchController = TextEditingController(text: ref.watch(clienteSearchProvider));
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F3EF),
       appBar: AppBar(
-        title: const Text('Clientes'),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(56),
-          child: Padding(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: Colors.black87,
+        title: const Text('Clientes', style: TextStyle(fontWeight: FontWeight.bold)),
+      ),
+      body: Column(
+        children: [
+          Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: TextField(
               controller: searchController,
               decoration: InputDecoration(
                 hintText: 'Buscar por nombre o teléfono...',
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: Icon(Icons.search, color: Colors.grey.shade500),
                 suffixIcon: searchController.text.isNotEmpty
                     ? IconButton(
                         icon: const Icon(Icons.clear),
@@ -33,47 +38,88 @@ class ClientesListScreen extends ConsumerWidget {
                         },
                       )
                     : null,
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               ),
               onChanged: (value) => ref.read(clienteSearchProvider.notifier).state = value,
             ),
           ),
-        ),
-      ),
-      body: clientesAsync.when(
-        data: (clientes) {
-          if (clientes.isEmpty) {
-            return const Center(child: Text('No hay clientes'));
-          }
-          return ListView.builder(
-            itemCount: clientes.length,
-            itemBuilder: (context, index) {
-              final c = clientes[index];
-              return ListTile(
-                leading: CircleAvatar(
-                  child: Text(c.nombre.substring(0, 1).toUpperCase()),
-                ),
-                title: Text(c.nombre),
-                subtitle: Text(c.telefono),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    EstadoChip(estado: c.estado),
-                    const SizedBox(width: 8),
-                    if (c.totalVisitas > 0)
-                      Text('${c.totalVisitas} visitas', style: Theme.of(context).textTheme.bodySmall),
-                  ],
-                ),
-                onTap: () => context.push('/clientes/${c.id}'),
-              );
-            },
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+          Expanded(
+            child: clientesAsync.when(
+              data: (clientes) {
+                if (clientes.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.people_outline, size: 64, color: Colors.grey.shade400),
+                        const SizedBox(height: 16),
+                        Text('No hay clientes', style: TextStyle(color: Colors.grey.shade600, fontSize: 16)),
+                      ],
+                    ),
+                  );
+                }
+                return ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: clientes.length,
+                  itemBuilder: (context, index) {
+                    final c = clientes[index];
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      elevation: 0,
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        leading: CircleAvatar(
+                          radius: 24,
+                          backgroundColor: Colors.amber.shade100,
+                          child: Text(
+                            c.nombre.substring(0, 1).toUpperCase(),
+                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.amber.shade800),
+                          ),
+                        ),
+                        title: Text(c.nombre, style: const TextStyle(fontWeight: FontWeight.w600)),
+                        subtitle: Text(c.telefono, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            EstadoChip(estado: c.estado),
+                            const SizedBox(width: 8),
+                            if (c.totalVisitas > 0)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  '${c.totalVisitas} visitas',
+                                  style: TextStyle(fontSize: 11, color: Colors.grey.shade700, fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                          ],
+                        ),
+                        onTap: () => context.push('/clientes/${c.id}'),
+                      ),
+                    );
+                  },
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(child: Text('Error: $e')),
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.amber.shade600,
         onPressed: () => context.push('/clientes/nuevo'),
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }

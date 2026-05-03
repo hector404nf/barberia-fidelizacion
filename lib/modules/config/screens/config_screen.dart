@@ -13,10 +13,16 @@ class ConfigScreen extends ConsumerWidget {
     final barberiaId = ref.watch(barberiaIdProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Configuración')),
+      backgroundColor: const Color(0xFFF5F3EF),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: Colors.black87,
+        title: const Text('Configuración', style: TextStyle(fontWeight: FontWeight.bold)),
+      ),
       body: ListView(
+        padding: const EdgeInsets.all(16),
         children: [
-          // URL del portal de clientes
           if (barberiaId != null)
             FutureBuilder(
               future: Supabase.instance.client
@@ -28,43 +34,52 @@ class ConfigScreen extends ConsumerWidget {
                 if (!snapshot.hasData) return const SizedBox.shrink();
                 final barberia = snapshot.data as Map<String, dynamic>;
                 final slug = barberia['slug'] as String?;
-                final nombre = barberia['nombre'] as String;
                 final urlCliente = slug != null
                     ? 'https://barberia-fidelizacion.vercel.app/b/$slug'
                     : null;
 
                 return Card(
-                  margin: const EdgeInsets.all(16),
-                  color: Theme.of(context).colorScheme.primaryContainer,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  elevation: 0,
+                  color: Colors.amber.shade50,
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Portal de Clientes',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
+                        Row(
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Colors.amber.shade100,
+                                borderRadius: BorderRadius.circular(12),
                               ),
+                              child: Icon(Icons.link, color: Colors.amber.shade700),
+                            ),
+                            const SizedBox(width: 12),
+                            const Expanded(
+                              child: Text(
+                                'Portal de Clientes',
+                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 8),
                         Text(
                           'Compartí esta URL con tus clientes para que se registren y reserven turnos.',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Theme.of(context).colorScheme.outline,
-                          ),
+                          style: TextStyle(fontSize: 13, color: Colors.grey.shade700),
                         ),
                         const SizedBox(height: 12),
                         if (urlCliente != null)
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                             decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surface,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-                              ),
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey.shade200),
                             ),
                             child: Row(
                               children: [
@@ -76,7 +91,7 @@ class ConfigScreen extends ConsumerWidget {
                                   ),
                                 ),
                                 IconButton(
-                                  icon: const Icon(Icons.copy, size: 20),
+                                  icon: Icon(Icons.copy, size: 20, color: Colors.amber.shade700),
                                   onPressed: () {
                                     Clipboard.setData(ClipboardData(text: urlCliente));
                                     ScaffoldMessenger.of(context).showSnackBar(
@@ -88,9 +103,9 @@ class ConfigScreen extends ConsumerWidget {
                             ),
                           )
                         else
-                          const Text(
+                          Text(
                             'Slug no disponible. Contactá soporte.',
-                            style: TextStyle(color: Colors.orange),
+                            style: TextStyle(color: Colors.orange.shade700, fontSize: 13),
                           ),
                       ],
                     ),
@@ -99,29 +114,82 @@ class ConfigScreen extends ConsumerWidget {
               },
             ),
 
-          ListTile(
-            leading: const Icon(Icons.people),
-            title: const Text('Barberos'),
-            onTap: () => context.push('/barberos'),
+          const SizedBox(height: 12),
+
+          Card(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            elevation: 0,
+            child: Column(
+              children: [
+                ListTile(
+                  leading: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(Icons.people, color: Colors.grey.shade700),
+                  ),
+                  title: const Text('Barberos', style: TextStyle(fontWeight: FontWeight.w600)),
+                  trailing: Icon(Icons.chevron_right, color: Colors.grey.shade400),
+                  onTap: () => context.push('/barberos'),
+                ),
+                const Divider(height: 1, indent: 16, endIndent: 16),
+                ListTile(
+                  leading: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(Icons.history, color: Colors.grey.shade700),
+                  ),
+                  title: const Text('Historial de Visitas', style: TextStyle(fontWeight: FontWeight.w600)),
+                  trailing: Icon(Icons.chevron_right, color: Colors.grey.shade400),
+                  onTap: () => context.push('/visitas'),
+                ),
+                const Divider(height: 1, indent: 16, endIndent: 16),
+                ListTile(
+                  leading: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(Icons.info, color: Colors.grey.shade700),
+                  ),
+                  title: const Text('Acerca de', style: TextStyle(fontWeight: FontWeight.w600)),
+                  trailing: Icon(Icons.chevron_right, color: Colors.grey.shade400),
+                  onTap: () {},
+                ),
+              ],
+            ),
           ),
-          ListTile(
-            leading: const Icon(Icons.history),
-            title: const Text('Historial de Visitas'),
-            onTap: () => context.push('/visitas'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.info),
-            title: const Text('Acerca de'),
-            onTap: () {},
-          ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text('Cerrar sesión', style: TextStyle(color: Colors.red)),
-            onTap: () async {
-              await Supabase.instance.client.auth.signOut();
-              if (context.mounted) context.go('/');
-            },
+
+          const SizedBox(height: 12),
+
+          Card(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            elevation: 0,
+            child: ListTile(
+              leading: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(Icons.logout, color: Colors.red.shade400),
+              ),
+              title: Text('Cerrar sesión', style: TextStyle(color: Colors.red.shade400, fontWeight: FontWeight.w600)),
+              onTap: () async {
+                await Supabase.instance.client.auth.signOut();
+                if (context.mounted) context.go('/');
+              },
+            ),
           ),
         ],
       ),

@@ -69,7 +69,7 @@ class _ClienteFormScreenState extends ConsumerState<ClienteFormScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -81,36 +81,87 @@ class _ClienteFormScreenState extends ConsumerState<ClienteFormScreen> {
   Widget build(BuildContext context) {
     final isEditing = widget.clienteId != null;
     return Scaffold(
-      appBar: AppBar(title: Text(isEditing ? 'Editar Cliente' : 'Nuevo Cliente')),
-      body: Padding(
+      backgroundColor: const Color(0xFFF5F3EF),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: Colors.black87,
+        title: Text(isEditing ? 'Editar Cliente' : 'Nuevo Cliente', style: const TextStyle(fontWeight: FontWeight.bold)),
+      ),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextFormField(
-                controller: _nombreController,
-                decoration: const InputDecoration(labelText: 'Nombre *'),
-                validator: (v) => v == null || v.isEmpty ? 'Requerido' : null,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _telefonoController,
-                decoration: const InputDecoration(labelText: 'Teléfono *'),
-                keyboardType: TextInputType.phone,
-                validator: (v) => v == null || v.isEmpty ? 'Requerido' : null,
+              Card(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                elevation: 0,
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      _buildTextField(
+                        controller: _nombreController,
+                        label: 'Nombre *',
+                        icon: Icons.person_outline,
+                        validator: (v) => v == null || v.isEmpty ? 'Requerido' : null,
+                      ),
+                      const SizedBox(height: 16),
+                      _buildTextField(
+                        controller: _telefonoController,
+                        label: 'Teléfono *',
+                        icon: Icons.phone_outlined,
+                        keyboardType: TextInputType.phone,
+                        validator: (v) => v == null || v.isEmpty ? 'Requerido' : null,
+                      ),
+                    ],
+                  ),
+                ),
               ),
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: _loading ? null : _guardar,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.amber.shade600,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                ),
                 child: _loading
-                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                    : Text(isEditing ? 'Guardar cambios' : 'Crear cliente'),
+                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : Text(isEditing ? 'Guardar cambios' : 'Crear cliente', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    String? Function(String?)? validator,
+    TextInputType? keyboardType,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      validator: validator,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: Colors.grey.shade500),
+        filled: true,
+        fillColor: Colors.grey.shade50,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       ),
     );
   }

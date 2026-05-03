@@ -15,8 +15,12 @@ class DashboardScreen extends ConsumerWidget {
     final rankingAsync = ref.watch(rankingBarberosProvider);
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F3EF),
       appBar: AppBar(
-        title: const Text('Dashboard'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: Colors.black87,
+        title: const Text('Dashboard', style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -39,13 +43,12 @@ class DashboardScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Saludo
               profileAsync.when(
                 data: (profile) {
                   if (profile == null) return const SizedBox.shrink();
                   return Text(
                     'Hola, ${profile.nombre}',
-                    style: Theme.of(context).textTheme.headlineSmall,
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   );
                 },
                 loading: () => const SizedBox.shrink(),
@@ -54,13 +57,10 @@ class DashboardScreen extends ConsumerWidget {
               const SizedBox(height: 4),
               Text(
                 'Resumen de los últimos 30 días',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.outline,
-                    ),
+                style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
               ),
               const SizedBox(height: 24),
 
-              // KPIs
               statsAsync.when(
                 data: (stats) {
                   if (stats.isEmpty) {
@@ -69,7 +69,7 @@ class DashboardScreen extends ConsumerWidget {
                   return Column(
                     children: [
                       _KpiGrid(stats: stats),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 20),
                       _IngresosCard(stats: stats),
                     ],
                   );
@@ -86,9 +86,8 @@ class DashboardScreen extends ConsumerWidget {
                 ),
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
-              // Ranking Barberos
               rankingAsync.when(
                 data: (ranking) {
                   if (ranking.isEmpty) return const SizedBox.shrink();
@@ -98,10 +97,9 @@ class DashboardScreen extends ConsumerWidget {
                 error: (_, __) => const SizedBox.shrink(),
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
 
-              // Acciones rápidas
-              Text('Acciones rápidas', style: Theme.of(context).textTheme.titleMedium),
+              const Text('Acciones rápidas', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 12),
               Row(
                 children: [
@@ -153,31 +151,35 @@ class _KpiGrid extends StatelessWidget {
       crossAxisCount: 2,
       crossAxisSpacing: 12,
       mainAxisSpacing: 12,
-      childAspectRatio: 1.4,
+      childAspectRatio: 1.5,
       children: [
         _KpiCard(
           title: 'Clientes Activos',
           value: '${stats['clientes_activos'] ?? 0}',
           icon: Icons.people,
-          color: Colors.green,
+          color: Colors.green.shade600,
+          bgColor: Colors.green.shade50,
         ),
         _KpiCard(
           title: 'Inactivos',
           value: '${stats['clientes_inactivos'] ?? 0}',
           icon: Icons.person_off,
-          color: Colors.orange,
+          color: Colors.orange.shade600,
+          bgColor: Colors.orange.shade50,
         ),
         _KpiCard(
           title: 'Visitas',
           value: '${stats['visitas_periodo'] ?? 0}',
           icon: Icons.cut,
-          color: Colors.blue,
+          color: Colors.amber.shade700,
+          bgColor: Colors.amber.shade50,
         ),
         _KpiCard(
           title: 'Ingresos',
           value: currency.format((stats['ingreso_total'] ?? 0) as num),
           icon: Icons.attach_money,
-          color: Colors.teal,
+          color: Colors.teal.shade600,
+          bgColor: Colors.teal.shade50,
         ),
       ],
     );
@@ -189,47 +191,54 @@ class _KpiCard extends StatelessWidget {
   final String value;
   final IconData icon;
   final Color color;
+  final Color bgColor;
 
   const _KpiCard({
     required this.title,
     required this.value,
     required this.icon,
     required this.color,
+    required this.bgColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    title,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.outline,
-                        ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Icon(icon, size: 20, color: color),
-              ],
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(12),
             ),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-          ],
-        ),
+            child: Icon(icon, size: 20, color: color),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                value,
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                title,
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -246,33 +255,23 @@ class _IngresosCard extends StatelessWidget {
     final recompensas = stats['recompensas_canjeadas'] ?? 0;
     final nuevos = stats['nuevos_clientes'] ?? 0;
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Métricas adicionales',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 16),
-            _MetricRow(
-              label: 'Ticket promedio',
-              value: currency.format(ticketPromedio),
-            ),
-            const Divider(height: 24),
-            _MetricRow(
-              label: 'Recompensas canjeadas',
-              value: '$recompensas',
-            ),
-            const Divider(height: 24),
-            _MetricRow(
-              label: 'Nuevos clientes',
-              value: '$nuevos',
-            ),
-          ],
-        ),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Métricas adicionales', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          _MetricRow(label: 'Ticket promedio', value: currency.format(ticketPromedio)),
+          const Divider(height: 24),
+          _MetricRow(label: 'Recompensas canjeadas', value: '$recompensas'),
+          const Divider(height: 24),
+          _MetricRow(label: 'Nuevos clientes', value: '$nuevos'),
+        ],
       ),
     );
   }
@@ -289,13 +288,8 @@ class _MetricRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: Theme.of(context).textTheme.bodyMedium),
-        Text(
-          value,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-        ),
+        Text(label, style: TextStyle(fontSize: 14, color: Colors.grey.shade700)),
+        Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
       ],
     );
   }
@@ -310,65 +304,54 @@ class _RankingBarberos extends StatelessWidget {
     final activos = ranking.where((b) => ((b['total_visitas'] as num?) ?? 0) > 0).toList();
     if (activos.isEmpty) return const SizedBox.shrink();
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Top Barberos',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 12),
-            ...activos.take(3).map((b) {
-              final nombre = b['nombre'] as String? ?? 'Barbero';
-              final visitas = (b['total_visitas'] as num?)?.toInt() ?? 0;
-              final ingresos = (b['ingresos'] as num?) ?? 0;
-              final currency = NumberFormat.currency(locale: 'es_CL', symbol: '\$');
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Top Barberos', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          ...activos.take(3).map((b) {
+            final nombre = b['nombre'] as String? ?? 'Barbero';
+            final visitas = (b['total_visitas'] as num?)?.toInt() ?? 0;
+            final ingresos = (b['ingresos'] as num?) ?? 0;
+            final currency = NumberFormat.currency(locale: 'es_CL', symbol: '\$');
 
-              return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 20,
-                      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                      child: Text(
-                        nombre.substring(0, 1),
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.amber.shade100,
+                    child: Text(
+                      nombre.substring(0, 1),
+                      style: TextStyle(color: Colors.amber.shade800, fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(nombre, style: Theme.of(context).textTheme.bodyLarge),
-                          Text(
-                            '$visitas visitas',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Theme.of(context).colorScheme.outline,
-                                ),
-                          ),
-                        ],
-                      ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(nombre, style: const TextStyle(fontWeight: FontWeight.w600)),
+                        Text('$visitas visitas', style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
+                      ],
                     ),
-                    Text(
-                      currency.format(ingresos),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                    ),
-                  ],
-                ),
-              );
-            }),
-          ],
-        ),
+                  ),
+                  Text(
+                    currency.format(ingresos),
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
       ),
     );
   }
@@ -389,23 +372,29 @@ class _ActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.primaryContainer,
-          borderRadius: BorderRadius.circular(12),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: Theme.of(context).colorScheme.primary),
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: Colors.amber.shade50,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: Colors.amber.shade700),
+            ),
             const SizedBox(height: 8),
             Text(
               label,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade700, fontWeight: FontWeight.w500),
               textAlign: TextAlign.center,
             ),
           ],
