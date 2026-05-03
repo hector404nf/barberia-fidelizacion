@@ -6,13 +6,17 @@ import '../../../models/reserva.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/reservas_provider.dart';
 
-final misReservasProvider = FutureProvider.autoDispose<List<Reserva>>((ref) async {
+final misReservasProvider = FutureProvider<List<Reserva>>((ref) async {
   final clienteAsync = ref.watch(clienteAuthProvider);
   final cliente = clienteAsync.whenOrNull(data: (c) => c);
-  if (cliente == null) return [];
+  if (cliente == null) {
+    await Future.delayed(const Duration(seconds: 2));
+    final retry = ref.read(clienteAuthProvider).whenOrNull(data: (c) => c);
+    if (retry == null) return [];
+    return ref.read(reservaRepositoryProvider).getByCliente(retry.id);
+  }
 
-  final response = await ref.read(reservaRepositoryProvider).getByCliente(cliente.id);
-  return response;
+  return await ref.read(reservaRepositoryProvider).getByCliente(cliente.id);
 });
 
 class ClienteReservasScreen extends ConsumerWidget {

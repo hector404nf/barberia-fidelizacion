@@ -7,12 +7,21 @@ import '../../../providers/auth_provider.dart';
 import '../../../providers/reservas_provider.dart';
 import '../../../widgets/app_alert.dart';
 
-final solicitudesPendientesProvider = FutureProvider.autoDispose<List<Reserva>>((ref) async {
+final solicitudesPendientesProvider = FutureProvider<List<Reserva>>((ref) async {
   final barberiaId = ref.watch(barberiaIdProvider);
-  if (barberiaId == null) return [];
+  if (barberiaId == null) {
+    // Esperar a que el perfil cargue
+    await Future.delayed(const Duration(seconds: 2));
+    final retryId = ref.read(barberiaIdProvider);
+    if (retryId == null) return [];
+    return ref.read(reservaRepositoryProvider).getSolicitudesPendientes(retryId);
+  }
 
-  final response = await ref.read(reservaRepositoryProvider).getSolicitudesPendientes(barberiaId);
-  return response;
+  try {
+    return await ref.read(reservaRepositoryProvider).getSolicitudesPendientes(barberiaId);
+  } catch (e) {
+    throw Exception('Error al cargar solicitudes: $e');
+  }
 });
 
 class SolicitudesScreen extends ConsumerWidget {
@@ -20,6 +29,7 @@ class SolicitudesScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final barberiaId = ref.watch(barberiaIdProvider);
     final solicitudesAsync = ref.watch(solicitudesPendientesProvider);
 
     return Scaffold(
@@ -29,6 +39,12 @@ class SolicitudesScreen extends ConsumerWidget {
         elevation: 0,
         foregroundColor: Colors.black87,
         title: const Text('Solicitudes de Reservas', style: TextStyle(fontWeight: FontWeight.bold)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () => ref.invalidate(solicitudesPendientesProvider),
+          ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(solicitudesPendientesProvider),
@@ -41,7 +57,16 @@ class SolicitudesScreen extends ConsumerWidget {
                   children: [
                     Icon(Icons.notifications_none, size: 64, color: Colors.grey.shade400),
                     const SizedBox(height: 16),
-                    Text('No hay solicitudes pendientes', style: TextStyle(color: Colors.grey.shade600, fontSize: 16)),
+                    Text(
+                      barberiaId == null
+                          ? 'Cargando tu barbería...'
+                          : 'No hay solicitudes pendientes',
+                      style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+                    ),
+                    if (barberiaId == null) ...[
+                      const SizedBox(height: 16),
+                      const CircularProgressIndicator(),
+                    ],
                   ],
                 ),
               );
@@ -72,7 +97,31 @@ class SolicitudesScreen extends ConsumerWidget {
             );
           },
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Error: $e')),
+          error: (e, stack) {
+            debugPrint('Error en solicitudes: $e');
+            debugPrint('Stack: $stack');
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, size: 64, color: Colors.red.shade300),
+                  const SizedBox(height: 16),
+                  Text('Error al cargar', style: TextStyle(color: Colors.grey.shade600, fontSize: 16)),
+                  const SizedBox(height: 8),
+                  Text('$e', style: TextStyle(color: Colors.red.shade400, fontSize: 12), textAlign: TextAlign.center),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => ref.invalidate(solicitudesPendientesProvider),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber.shade600,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: const Text('Reintentar'),
+                  ),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
