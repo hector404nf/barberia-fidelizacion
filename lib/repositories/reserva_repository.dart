@@ -47,11 +47,12 @@ class ReservaRepository {
   }
 
   Future<List<Reserva>> getSolicitudesPendientes(String barberiaId) async {
+    // Obtener solicitudes con estado 'solicitada' o 'pendiente' (reservas viejas)
     final response = await _client
         .from('reservas')
         .select('*, clientes!inner(nombre, telefono, barberia_id)')
         .eq('clientes.barberia_id', barberiaId)
-        .eq('estado', 'solicitada')
+        .inFilter('estado', ['solicitada', 'pendiente'])
         .order('fecha')
         .order('hora');
     return (response as List).map((e) => Reserva.fromJson(e)).toList();

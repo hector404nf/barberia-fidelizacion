@@ -82,10 +82,10 @@ class _CalendarioScreenState extends ConsumerState<CalendarioScreen> {
           const SizedBox(height: 12),
           Expanded(
             child: reservasAsync.when(
-              data: (reservas) {
-                // Separar: solicitudes vs confirmadas
-                final solicitudes = reservas.where((r) => r.estado == 'solicitada').toList();
-                final confirmadas = reservas.where((r) => r.estado != 'solicitada').toList();
+      data: (reservas) {
+        // Separar: solicitudes (solicitada o pendiente) vs confirmadas
+        final solicitudes = reservas.where((r) => r.estado == 'solicitada' || r.estado == 'pendiente').toList();
+        final confirmadas = reservas.where((r) => r.estado != 'solicitada' && r.estado != 'pendiente').toList();
 
                 if (reservas.isEmpty) {
                   return Center(
