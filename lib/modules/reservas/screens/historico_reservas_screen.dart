@@ -10,39 +10,50 @@ import '../../../providers/clientes_provider.dart';
 import '../../../widgets/app_alert.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-final reservasHistoricoProvider = FutureProvider.family<List<Reserva>, List<DateTime>>((ref, fechas) async {
-  final profileAsync = ref.watch(profileProvider);
-  if (profileAsync == null) return [];
-  
-  final barberiaId = profileAsync.whenOrNull(data: (p) => p?.barberiaId);
-  if (barberiaId == null) return [];
+class ReservasHistoricoNotifier extends StateNotifier<AsyncValue<List<Reserva>>> {
+  ReservasHistoricoNotifier() : super(const AsyncValue.loading());
 
-  final fechaInicio = fechas[0];
-  final fechaFin = fechas[1];
+  Future<void> load({
+    required DateTime fechaInicio,
+    required DateTime fechaFin,
+    required String barberiaId,
+  }) async {
+    state = const AsyncValue.loading();
+    
+    try {
+      final fechaInicioStr = fechaInicio.toIso8601String().split('T').first;
+      final fechaFinStr = fechaFin.toIso8601String().split('T').first;
 
-  final fechaInicioStr = fechaInicio.toIso8601String().split('T').first;
-  final fechaFinStr = fechaFin.toIso8601String().split('T').first;
+      final clientesResponse = await Supabase.instance.client
+          .from('clientes')
+          .select('id')
+          .eq('barberia_id', barberiaId);
 
-  // Obtener clientes de la barberia
-  final clientesResponse = await Supabase.instance.client
-      .from('clientes')
-      .select('id')
-      .eq('barberia_id', barberiaId);
+      final clienteIds = (clientesResponse as List).map((c) => c['id'] as String).toList();
+      if (clienteIds.isEmpty) {
+        state = const AsyncValue.data([]);
+        return;
+      }
 
-  final clienteIds = (clientesResponse as List).map((c) => c['id'] as String).toList();
-  if (clienteIds.isEmpty) return [];
+      final response = await Supabase.instance.client
+          .from('reservas')
+          .select('*, clientes(nombre, telefono)')
+          .inFilter('cliente_id', clienteIds)
+          .gte('fecha', fechaInicioStr)
+          .lte('fecha', fechaFinStr)
+          .order('fecha', ascending: false)
+          .order('hora', ascending: false);
 
-  // Obtener reservas
-  final response = await Supabase.instance.client
-      .from('reservas')
-      .select('*, clientes(nombre, telefono)')
-      .inFilter('cliente_id', clienteIds)
-      .gte('fecha', fechaInicioStr)
-      .lte('fecha', fechaFinStr)
-      .order('fecha', ascending: false)
-      .order('hora', ascending: false);
+      final reservas = (response as List).map((e) => Reserva.fromJson(e)).toList();
+      state = AsyncValue.data(reservas);
+    } catch (e) {
+      state = AsyncValue.error(e);
+    }
+  }
+}
 
-  return (response as List).map((e) => Reserva.fromJson(e)).toList();
+final reservasHistoricoProvider = StateNotifierProvider<ReservasHistoricoNotifier, AsyncValue<List<Reserva>>>((ref) {
+  return ReservasHistoricoNotifier();
 });
 
 class HistoricoReservasScreen extends ConsumerStatefulWidget {
@@ -57,12 +68,34 @@ class _HistoricoReservasScreenState extends ConsumerState<HistoricoReservasScree
   DateTime _fechaFin = DateTime.now();
   String _filtroEstado = 'todos';
   String? _filtroBarbero;
+  bool _initialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      _loadData();
+    }
+  }
+
+  void _loadData() {
+    final profile = ref.read(profileProvider).whenOrNull(data: (p) => p);
+    final barberiaId = profile?.barberiaId;
+    if (barberiaId != null) {
+      ref.read(reservasHistoricoProvider.notifier).load(
+        fechaInicio: _fechaInicio,
+        fechaFin: _fechaFin,
+        barberiaId: barberiaId,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final profileAsync = ref.watch(profileProvider);
-    final barberiaId = profileAsync.whenOrNull(data: (p) => p?.barberiaId);
-    final reservasAsync = ref.watch(reservasHistoricoProvider([_fechaInicio, _fechaFin]));
+    final reservasAsync = ref.watch(reservasHistoricoProvider);
+    final profile = ref.watch(profileProvider).whenOrNull(data: (p) => p);
+    final barberiaId = profile?.barberiaId;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F3EF),
@@ -108,7 +141,10 @@ class _HistoricoReservasScreenState extends ConsumerState<HistoricoReservasScree
                                 firstDate: DateTime.now().subtract(const Duration(days: 365)),
                                 lastDate: _fechaFin,
                               );
-                              if (picked != null) setState(() => _fechaInicio = picked);
+                              if (picked != null) {
+  setState(() => _fechaInicio = picked);
+  _loadData();
+}
                             },
                           ),
                         ],
@@ -139,7 +175,10 @@ class _HistoricoReservasScreenState extends ConsumerState<HistoricoReservasScree
                                 firstDate: _fechaInicio,
                                 lastDate: DateTime.now().add(const Duration(days: 365)),
                               );
-                              if (picked != null) setState(() => _fechaFin = picked);
+                              if (picked != null) {
+  setState(() => _fechaFin = picked);
+  _loadData();
+}
                             },
                           ),
                         ],
@@ -215,7 +254,7 @@ class _HistoricoReservasScreenState extends ConsumerState<HistoricoReservasScree
                       reserva: r,
                       onCancelar: () async {
                         await ref.read(reservaRepositoryProvider).updateEstado(r.id, 'cancelada');
-                        ref.invalidate(reservasHistoricoProvider([_fechaInicio, _fechaFin]));
+                        _loadData();
                         if (mounted) {
                           showSuccessAlert(context, 'Reserva cancelada');
                         }
