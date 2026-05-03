@@ -1,15 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../models/reserva.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/reservas_provider.dart';
 import '../../../widgets/app_alert.dart';
 
-final reservasHistoricoProvider = FutureProvider.autoDispose.family<List<Reserva>, DateTime>((ref, fecha) async {
+final reservasHistoricoProvider = FutureProvider.autoDispose.family<List<Reserva>, List<DateTime>>((ref, fechas) async {
   final barberiaId = ref.watch(barberiaIdProvider);
   if (barberiaId == null) return [];
-  return ref.read(reservaRepositoryProvider).getByFecha(barberiaId, fecha);
+  
+  final fechaInicio = fechas[0];
+  final fechaFin = fechas[1];
+  
+  final fechaInicioStr = fechaInicio.toIso8601String().split('T').first;
+  final fechaFinStr = fechaFin.toIso8601String().split('T').first;
+  
+  final response = await Supabase.instance.client
+      .from('reservas')
+      .select('*, clientes(nombre, telefono, barberia_id)')
+      .eq('clientes.barberia_id', barberiaId)
+      .gte('fecha', fechaInicioStr)
+      .lte('fecha', fechaFinStr)
+      .order('fecha', ascending: false)
+      .order('hora', ascending: false);
+  
+  return (response as List).map((e) => Reserva.fromJson(e)).toList();
 });
 
 class HistoricoReservasScreen extends ConsumerStatefulWidget {
@@ -27,7 +44,7 @@ class _HistoricoReservasScreenState extends ConsumerState<HistoricoReservasScree
 
   @override
   Widget build(BuildContext context) {
-    final reservasAsync = ref.watch(reservasHistoricoProvider(_fechaFin));
+    final reservasAsync = ref.watch(reservasHistoricoProvider([_fechaInicio, _fechaFin]));
     final barberiaId = ref.watch(barberiaIdProvider);
     final barberosAsync = ref.watch(barberosProvider);
 
@@ -182,7 +199,7 @@ class _HistoricoReservasScreenState extends ConsumerState<HistoricoReservasScree
                       reserva: r,
                       onCancelar: () async {
                         await ref.read(reservaRepositoryProvider).updateEstado(r.id, 'cancelada');
-                        ref.invalidate(reservasHistoricoProvider(_fechaFin));
+                        ref.invalidate(reservasHistoricoProvider([_fechaInicio, _fechaFin]));
                         if (mounted) {
                           showSuccessAlert(context, 'Reserva cancelada');
                         }
@@ -315,6 +332,7 @@ class _ReservaCard extends StatelessWidget {
     final nombre = reserva.clienteNombre ?? 'Cliente';
     final telefono = reserva.clienteTelefono ?? '';
     final esCancelada = reserva.estado == 'cancelada' || reserva.estado == 'no_show';
+    final fechaStr = DateFormat('dd/MM/yyyy').format(reserva.fecha);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -345,7 +363,18 @@ class _ReservaCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(reserva.servicio, style: const TextStyle(fontWeight: FontWeight.w600)),
+                      Row(
+                        children: [
+                          Text(fechaStr, style: TextStyle(color: Colors.grey.shade500, fontSize: 11, fontWeight: FontWeight.w600)),
+                          const SizedBox(width: 8),
+                          Text('•', style: TextStyle(color: Colors.grey.shade400)),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(reserva.servicio, style: const TextStyle(fontWeight: FontWeight.w600)),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
                       Text(nombre, style: TextStyle(color: Colors.grey.shade700, fontSize: 13)),
                       if (telefono.isNotEmpty)
                         Text(telefono, style: TextStyle(color: Colors.grey.shade500, fontSize: 11)),
