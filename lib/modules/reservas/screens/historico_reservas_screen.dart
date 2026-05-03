@@ -11,22 +11,33 @@ import '../../../widgets/app_alert.dart';
 final reservasHistoricoProvider = FutureProvider.autoDispose.family<List<Reserva>, List<DateTime>>((ref, fechas) async {
   final barberiaId = ref.watch(barberiaIdProvider);
   if (barberiaId == null) return [];
-  
+
   final fechaInicio = fechas[0];
   final fechaFin = fechas[1];
-  
+
   final fechaInicioStr = fechaInicio.toIso8601String().split('T').first;
   final fechaFinStr = fechaFin.toIso8601String().split('T').first;
-  
-  final response = await Supabase.instance.client
+
+  // Primero obtener todos los clientes de la barberia
+  final clientesResponse = await Supabase.instance.client
+      .from('clientes')
+      .select('id')
+      .eq('barberia_id', barberiaId);
+
+  final clienteIds = (clientesResponse as List).map((c) => c['id'] as String).toList();
+  if (clienteIds.isEmpty) return [];
+
+  // Ahora obtener las reservas de esos clientes
+  var query = Supabase.instance.client
       .from('reservas')
-      .select('*, clientes(nombre, telefono, barberia_id)')
-      .eq('clientes.barberia_id', barberiaId)
+      .select('*, clientes(nombre, telefono)')
+      .inFilter('cliente_id', clienteIds)
       .gte('fecha', fechaInicioStr)
       .lte('fecha', fechaFinStr)
       .order('fecha', ascending: false)
       .order('hora', ascending: false);
-  
+
+  final response = await query;
   return (response as List).map((e) => Reserva.fromJson(e)).toList();
 });
 
