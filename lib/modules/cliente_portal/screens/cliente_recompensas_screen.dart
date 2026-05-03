@@ -54,7 +54,7 @@ class ClienteRecompensasScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.trophy, size: 64, color: Colors.grey.shade400),
+                  Icon(Icons.emoji_events, size: 64, color: Colors.grey.shade400),
                   const SizedBox(height: 16),
                   Text(
                     'No hay recompensas disponibles',
@@ -220,7 +220,7 @@ class _RecompensaCanjeCardState extends ConsumerState<_RecompensaCanjeCard> {
       case 'producto':
         return Icons.card_giftcard;
       default:
-        return Icons.trophy;
+        return Icons.emoji_events;
     }
   }
 }

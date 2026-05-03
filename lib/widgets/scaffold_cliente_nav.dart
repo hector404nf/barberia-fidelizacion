@@ -56,8 +56,8 @@ class ScaffoldClienteNav extends ConsumerWidget {
             label: 'Reservar',
           ),
           NavigationDestination(
-            icon: Icon(Icons.trophy_outlined),
-            selectedIcon: Icon(Icons.trophy),
+            icon: Icon(Icons.emoji_events_outlined),
+            selectedIcon: Icon(Icons.emoji_events),
             label: 'Recompensas',
           ),
         ],
