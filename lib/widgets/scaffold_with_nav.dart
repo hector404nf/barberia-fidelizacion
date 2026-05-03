@@ -74,7 +74,8 @@ class ScaffoldWithNav extends ConsumerWidget {
         location.startsWith('/recompensas') ||
         location.startsWith('/barberos') ||
         location.startsWith('/config') ||
-        location.startsWith('/visitas');
+        location.startsWith('/visitas') ||
+        location.startsWith('/solicitudes');
   }
 
   void _showMoreMenu(BuildContext context, WidgetRef ref, bool esDueno) {
@@ -108,6 +109,14 @@ class ScaffoldWithNav extends ConsumerWidget {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
+              _MenuItem(
+                icon: Icons.notifications_none,
+                label: 'Solicitudes',
+                onTap: () {
+                  Navigator.pop(context);
+                  context.go('/solicitudes');
+                },
+              ),
               _MenuItem(
                 icon: Icons.spa_outlined,
                 label: 'Servicios',

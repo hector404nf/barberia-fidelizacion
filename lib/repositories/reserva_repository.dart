@@ -9,9 +9,19 @@ class ReservaRepository {
     final fechaStr = fecha.toIso8601String().split('T').first;
     final response = await _client
         .from('reservas')
-        .select('*, clientes!inner(nombre, barberia_id)')
+        .select('*, clientes!inner(nombre, telefono, barberia_id)')
         .eq('clientes.barberia_id', barberiaId)
         .eq('fecha', fechaStr)
+        .order('hora');
+    return (response as List).map((e) => Reserva.fromJson(e)).toList();
+  }
+
+  Future<List<Reserva>> getByCliente(String clienteId) async {
+    final response = await _client
+        .from('reservas')
+        .select('*')
+        .eq('cliente_id', clienteId)
+        .order('fecha', ascending: false)
         .order('hora');
     return (response as List).map((e) => Reserva.fromJson(e)).toList();
   }
@@ -27,13 +37,24 @@ class ReservaRepository {
     return (response as List).map((e) => Reserva.fromJson(e)).toList();
   }
 
-  Future<Reserva> create(Reserva reserva) async {
+  Future<Reserva> create(Reserva reserva, {String? estado}) async {
     final response = await _client
         .from('reservas')
-        .insert(reserva.toInsertJson())
+        .insert(reserva.toInsertJson(estadoOverride: estado))
         .select()
         .single();
     return Reserva.fromJson(response);
+  }
+
+  Future<List<Reserva>> getSolicitudesPendientes(String barberiaId) async {
+    final response = await _client
+        .from('reservas')
+        .select('*, clientes!inner(nombre, telefono, barberia_id)')
+        .eq('clientes.barberia_id', barberiaId)
+        .eq('estado', 'solicitada')
+        .order('fecha')
+        .order('hora');
+    return (response as List).map((e) => Reserva.fromJson(e)).toList();
   }
 
   Future<Reserva> updateEstado(String id, String estado) async {

@@ -11,6 +11,8 @@ class Reserva extends Equatable {
   final String? notas;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String? clienteNombre;
+  final String? clienteTelefono;
 
   const Reserva({
     required this.id,
@@ -19,13 +21,16 @@ class Reserva extends Equatable {
     required this.fecha,
     required this.hora,
     required this.servicio,
-    this.estado = 'pendiente',
+    this.estado = 'solicitada',
     this.notas,
     required this.createdAt,
     required this.updatedAt,
+    this.clienteNombre,
+    this.clienteTelefono,
   });
 
   factory Reserva.fromJson(Map<String, dynamic> json) {
+    final clientes = json['clientes'] as Map<String, dynamic>?;
     return Reserva(
       id: json['id'] as String,
       clienteId: json['cliente_id'] as String,
@@ -33,19 +38,22 @@ class Reserva extends Equatable {
       fecha: DateTime.parse(json['fecha'] as String),
       hora: json['hora'] as String,
       servicio: json['servicio'] as String,
-      estado: json['estado'] as String? ?? 'pendiente',
+      estado: json['estado'] as String? ?? 'solicitada',
       notas: json['notas'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
+      clienteNombre: clientes?['nombre'] as String?,
+      clienteTelefono: clientes?['telefono'] as String?,
     );
   }
 
-  Map<String, dynamic> toInsertJson() => {
+  Map<String, dynamic> toInsertJson({String? estadoOverride}) => {
         'cliente_id': clienteId,
         'barbero_id': barberoId,
         'fecha': fecha.toIso8601String().split('T').first,
         'hora': hora,
         'servicio': servicio,
+        'estado': estadoOverride ?? estado,
         'notas': notas,
       };
 
@@ -60,6 +68,8 @@ class Reserva extends Equatable {
     String? notas,
     DateTime? createdAt,
     DateTime? updatedAt,
+    String? clienteNombre,
+    String? clienteTelefono,
   }) {
     return Reserva(
       id: id ?? this.id,
@@ -72,6 +82,8 @@ class Reserva extends Equatable {
       notas: notas ?? this.notas,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      clienteNombre: clienteNombre ?? this.clienteNombre,
+      clienteTelefono: clienteTelefono ?? this.clienteTelefono,
     );
   }
 

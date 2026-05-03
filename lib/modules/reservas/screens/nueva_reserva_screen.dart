@@ -92,7 +92,7 @@ class _NuevaReservaScreenState extends ConsumerState<NuevaReservaScreen> {
         updatedAt: DateTime.now(),
       );
 
-      await ref.read(reservaRepositoryProvider).create(reserva);
+      await ref.read(reservaRepositoryProvider).create(reserva, estado: 'confirmada');
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

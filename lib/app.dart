@@ -30,6 +30,8 @@ import 'modules/cliente_portal/screens/cliente_portal_screen.dart';
 import 'modules/cliente_portal/screens/cliente_visitas_screen.dart';
 import 'modules/cliente_portal/screens/cliente_reservar_screen.dart';
 import 'modules/cliente_portal/screens/cliente_recompensas_screen.dart';
+import 'modules/cliente_portal/screens/cliente_reservas_screen.dart';
+import 'modules/reservas/screens/solicitudes_screen.dart';
 import 'widgets/scaffold_with_nav.dart';
 import 'widgets/scaffold_cliente_nav.dart';
 
@@ -98,6 +100,7 @@ final _router = GoRouter(
         ),
         GoRoute(path: '/agenda', builder: (context, state) => const CalendarioScreen()),
         GoRoute(path: '/agenda/nueva', builder: (context, state) => const NuevaReservaScreen()),
+        GoRoute(path: '/solicitudes', builder: (context, state) => const SolicitudesScreen()),
         GoRoute(path: '/recompensas', builder: (context, state) => const RecompensasScreen()),
         GoRoute(path: '/recompensas/nueva', builder: (context, state) => const RecompensaFormScreen()),
         GoRoute(path: '/recompensas/:id/editar', builder: (context, state) => RecompensaFormScreen(recompensaId: state.pathParameters['id'])),
@@ -119,6 +122,7 @@ final _router = GoRouter(
         GoRoute(path: '/cliente', builder: (context, state) => const ClientePortalScreen()),
         GoRoute(path: '/cliente/visitas', builder: (context, state) => const ClienteVisitasScreen()),
         GoRoute(path: '/cliente/reservar', builder: (context, state) => const ClienteReservarScreen()),
+        GoRoute(path: '/cliente/reservas', builder: (context, state) => const ClienteReservasScreen()),
         GoRoute(path: '/cliente/recompensas', builder: (context, state) => const ClienteRecompensasScreen()),
       ],
     ),

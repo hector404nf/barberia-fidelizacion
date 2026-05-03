@@ -86,7 +86,7 @@ class _ClienteReservarScreenState extends ConsumerState<ClienteReservarScreen> {
       );
 
       if (mounted) {
-        showSuccessAlert(context, 'Reserva confirmada', onConfirm: () {
+        showSuccessAlert(context, 'Solicitud enviada. Te avisaremos cuando la confirmen.', onConfirm: () {
           setState(() {
             _horaSeleccionada = null;
             _servicio = null;

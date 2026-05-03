@@ -98,6 +98,14 @@ class ScaffoldClienteNav extends ConsumerWidget {
               ),
               const SizedBox(height: 16),
               _MenuItem(
+                icon: Icons.calendar_month_outlined,
+                label: 'Mis Reservas',
+                onTap: () {
+                  Navigator.pop(context);
+                  context.go('/cliente/reservas');
+                },
+              ),
+              _MenuItem(
                 icon: Icons.emoji_events_outlined,
                 label: 'Recompensas',
                 onTap: () {
