@@ -44,11 +44,11 @@ class ReservasHistoricoNotifier extends StateNotifier<AsyncValue<List<Reserva>>>
           .order('fecha', ascending: false)
           .order('hora', ascending: false);
 
-      final reservas = (response as List).map((e) => Reserva.fromJson(e)).toList();
-      state = AsyncValue.data(reservas);
-    } catch (e) {
-      state = AsyncValue.error(e);
-    }
+    final reservas = (response as List).map((e) => Reserva.fromJson(e)).toList();
+    state = AsyncValue.data(reservas);
+  } catch (e, stack) {
+    state = AsyncValue.error(e, stack);
+  }
   }
 }
 
