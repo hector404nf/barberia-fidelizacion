@@ -6,10 +6,15 @@ import '../../../models/reserva.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/barberos_provider.dart';
 import '../../../providers/reservas_provider.dart';
+import '../../../providers/clientes_provider.dart';
 import '../../../widgets/app_alert.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-final reservasHistoricoProvider = FutureProvider.autoDispose.family<List<Reserva>, List<DateTime>>((ref, fechas) async {
-  final barberiaId = ref.watch(barberiaIdProvider);
+final reservasHistoricoProvider = FutureProvider.family<List<Reserva>, List<DateTime>>((ref, fechas) async {
+  final profileAsync = ref.watch(profileProvider);
+  if (profileAsync == null) return [];
+  
+  final barberiaId = profileAsync.whenOrNull(data: (p) => p?.barberiaId);
   if (barberiaId == null) return [];
 
   final fechaInicio = fechas[0];
@@ -18,7 +23,7 @@ final reservasHistoricoProvider = FutureProvider.autoDispose.family<List<Reserva
   final fechaInicioStr = fechaInicio.toIso8601String().split('T').first;
   final fechaFinStr = fechaFin.toIso8601String().split('T').first;
 
-  // Primero obtener todos los clientes de la barberia
+  // Obtener clientes de la barberia
   final clientesResponse = await Supabase.instance.client
       .from('clientes')
       .select('id')
@@ -27,8 +32,8 @@ final reservasHistoricoProvider = FutureProvider.autoDispose.family<List<Reserva
   final clienteIds = (clientesResponse as List).map((c) => c['id'] as String).toList();
   if (clienteIds.isEmpty) return [];
 
-  // Ahora obtener las reservas de esos clientes
-  var query = Supabase.instance.client
+  // Obtener reservas
+  final response = await Supabase.instance.client
       .from('reservas')
       .select('*, clientes(nombre, telefono)')
       .inFilter('cliente_id', clienteIds)
@@ -37,7 +42,6 @@ final reservasHistoricoProvider = FutureProvider.autoDispose.family<List<Reserva
       .order('fecha', ascending: false)
       .order('hora', ascending: false);
 
-  final response = await query;
   return (response as List).map((e) => Reserva.fromJson(e)).toList();
 });
 
@@ -56,8 +60,9 @@ class _HistoricoReservasScreenState extends ConsumerState<HistoricoReservasScree
 
   @override
   Widget build(BuildContext context) {
+    final profileAsync = ref.watch(profileProvider);
+    final barberiaId = profileAsync.whenOrNull(data: (p) => p?.barberiaId);
     final reservasAsync = ref.watch(reservasHistoricoProvider([_fechaInicio, _fechaFin]));
-    final barberiaId = ref.watch(barberiaIdProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F3EF),

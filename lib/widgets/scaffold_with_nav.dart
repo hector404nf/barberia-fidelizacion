@@ -69,14 +69,15 @@ class ScaffoldWithNav extends ConsumerWidget {
     );
   }
 
-  bool _isExtraRoute(String location) {
-    return location.startsWith('/servicios') ||
-        location.startsWith('/recompensas') ||
-        location.startsWith('/barberos') ||
-        location.startsWith('/config') ||
-        location.startsWith('/visitas') ||
-        location.startsWith('/solicitudes');
-  }
+bool _isExtraRoute(String location) {
+  return location.startsWith('/servicios') ||
+  location.startsWith('/recompensas') ||
+  location.startsWith('/barberos') ||
+  location.startsWith('/config') ||
+  location.startsWith('/visitas') ||
+  location.startsWith('/solicitudes') ||
+  location.startsWith('/historico');
+}
 
   void _showMoreMenu(BuildContext context, WidgetRef ref, bool esDueno) {
     showModalBottomSheet(
@@ -155,14 +156,6 @@ class ScaffoldWithNav extends ConsumerWidget {
       onTap: () {
         Navigator.pop(context);
         context.go('/visitas');
-      },
-    ),
-    _MenuItem(
-      icon: Icons.history_edu,
-      label: 'Histórico de Reservas',
-      onTap: () {
-        Navigator.pop(context);
-        context.go('/historico');
       },
     ),
     _MenuItem(
