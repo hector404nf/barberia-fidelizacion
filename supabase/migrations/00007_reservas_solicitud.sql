@@ -2,16 +2,16 @@
 -- Las reservas creadas por clientes empiezan como 'solicitada'
 -- El admin debe confirmarlas para pasarlas a 'confirmada'
 
--- Actualizar la constraint CHECK de estados en reservas
+-- Primero actualizar reservas existentes pendientes a 'confirmada'
+UPDATE reservas SET estado = 'confirmada' WHERE estado = 'pendiente';
+
+-- Actualizar la constraint CHECK de estados en reservas (usar nombre nuevo para evitar conflictos)
 ALTER TABLE reservas DROP CONSTRAINT IF EXISTS reservas_estado_check;
-ALTER TABLE reservas ADD CONSTRAINT reservas_estado_check 
+ALTER TABLE reservas ADD CONSTRAINT reservas_estado_check_v2
   CHECK (estado IN ('solicitada', 'confirmada', 'completada', 'cancelada', 'no_show'));
 
 -- Default para nuevas reservas
 ALTER TABLE reservas ALTER COLUMN estado SET DEFAULT 'solicitada';
-
--- Actualizar reservas existentes pendientes a 'confirmada' para mantener compatibilidad
-UPDATE reservas SET estado = 'confirmada' WHERE estado = 'pendiente';
 
 -- Función para que las reservas administrativas vayan directo a confirmada
 CREATE OR REPLACE FUNCTION crear_reserva_admin(
