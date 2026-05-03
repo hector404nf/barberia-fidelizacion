@@ -7,21 +7,20 @@ import '../../../providers/auth_provider.dart';
 import '../../../providers/reservas_provider.dart';
 import '../../../widgets/app_alert.dart';
 
-final solicitudesPendientesProvider = FutureProvider<List<Reserva>>((ref) async {
-  final barberiaId = ref.watch(barberiaIdProvider);
+final solicitudesPendientesProvider = FutureProvider.autoDispose<List<Reserva>>((ref) async {
+  // Esperar a que barberiaId cargue (puede tardar un poco por el profileProvider)
+  String? barberiaId;
+  for (var i = 0; i < 10; i++) {
+    barberiaId = ref.watch(barberiaIdProvider);
+    if (barberiaId != null) break;
+    await Future.delayed(const Duration(milliseconds: 200));
+  }
+  
   if (barberiaId == null) {
-    // Esperar a que el perfil cargue
-    await Future.delayed(const Duration(seconds: 2));
-    final retryId = ref.read(barberiaIdProvider);
-    if (retryId == null) return [];
-    return ref.read(reservaRepositoryProvider).getSolicitudesPendientes(retryId);
+    return [];
   }
-
-  try {
-    return await ref.read(reservaRepositoryProvider).getSolicitudesPendientes(barberiaId);
-  } catch (e) {
-    throw Exception('Error al cargar solicitudes: $e');
-  }
+  
+  return await ref.read(reservaRepositoryProvider).getSolicitudesPendientes(barberiaId);
 });
 
 class SolicitudesScreen extends ConsumerWidget {
