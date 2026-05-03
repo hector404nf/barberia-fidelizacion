@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../models/recompensa.dart';
+import '../../../widgets/app_alert.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/recompensas_provider.dart';
 
@@ -22,7 +23,6 @@ class _RecompensaFormScreenState extends ConsumerState<RecompensaFormScreen> {
   String _tipo = 'servicio';
   bool _stockLimitado = false;
   bool _loading = false;
-  String? _error;
 
   @override
   void initState() {
@@ -55,21 +55,21 @@ class _RecompensaFormScreenState extends ConsumerState<RecompensaFormScreen> {
     final puntos = int.tryParse(_puntosController.text);
 
     if (nombre.isEmpty) {
-      setState(() => _error = 'Ingresa un nombre');
+      showValidationError(context, 'Ingresa un nombre');
       return;
     }
     if (puntos == null || puntos <= 0) {
-      setState(() => _error = 'Puntos requeridos inválidos');
+      showValidationError(context, 'Puntos requeridos inválidos');
       return;
     }
 
     final barberiaId = ref.read(barberiaIdProvider);
     if (barberiaId == null) {
-      setState(() => _error = 'No se pudo obtener la barbería');
+      showValidationError(context, 'No se pudo obtener la barbería');
       return;
     }
 
-    setState(() { _loading = true; _error = null; });
+    setState(() { _loading = true; });
 
     try {
       final repo = ref.read(recompensaRepositoryProvider);
@@ -103,7 +103,7 @@ class _RecompensaFormScreenState extends ConsumerState<RecompensaFormScreen> {
       ref.invalidate(recompensasAdminProvider);
       if (mounted) context.go('/recompensas');
     } catch (e) {
-      setState(() => _error = 'Error al guardar: $e');
+      if (mounted) showValidationError(context, 'Error al guardar: $e');
     } finally {
       setState(() => _loading = false);
     }
@@ -181,11 +181,6 @@ class _RecompensaFormScreenState extends ConsumerState<RecompensaFormScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            if (_error != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Text(_error!, style: const TextStyle(color: Colors.red)),
-              ),
             ElevatedButton(
               onPressed: _loading ? null : _guardar,
               style: ElevatedButton.styleFrom(

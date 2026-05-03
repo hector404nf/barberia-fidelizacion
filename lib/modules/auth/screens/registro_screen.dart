@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../widgets/app_alert.dart';
 
 class RegistroScreen extends ConsumerStatefulWidget {
   const RegistroScreen({super.key});
@@ -16,10 +17,9 @@ class _RegistroScreenState extends ConsumerState<RegistroScreen> {
   final _passwordController = TextEditingController();
   final _barberiaController = TextEditingController();
   bool _loading = false;
-  String? _error;
 
   Future<void> _registrar() async {
-    setState(() { _loading = true; _error = null; });
+    setState(() { _loading = true; });
     try {
       final authResponse = await Supabase.instance.client.auth.signUp(
         email: _emailController.text.trim(),
@@ -41,11 +41,11 @@ class _RegistroScreenState extends ConsumerState<RegistroScreen> {
 
       if (mounted) context.go('/dashboard');
     } on PostgrestException catch (e) {
-      setState(() => _error = e.message);
+      if (mounted) showValidationError(context, e.message);
     } on AuthException catch (e) {
-      setState(() => _error = e.message);
+      if (mounted) showValidationError(context, e.message);
     } catch (e) {
-      setState(() => _error = 'Error inesperado: $e');
+      if (mounted) showValidationError(context, 'Error inesperado: $e');
     } finally {
       setState(() => _loading = false);
     }
@@ -111,10 +111,6 @@ class _RegistroScreenState extends ConsumerState<RegistroScreen> {
                       label: 'Nombre de la barbería',
                       icon: Icons.store_outlined,
                     ),
-                    if (_error != null) ...[
-                      const SizedBox(height: 12),
-                      Text(_error!, style: const TextStyle(color: Colors.red, fontSize: 13)),
-                    ],
                     const SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: _loading ? null : _registrar,

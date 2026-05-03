@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../widgets/app_alert.dart';
 import '../../../models/cliente.dart';
 import '../../../models/reserva.dart';
 import '../../../models/servicio.dart';
@@ -29,7 +30,6 @@ class _NuevaReservaScreenState extends ConsumerState<NuevaReservaScreen> {
   TimeOfDay _hora = const TimeOfDay(hour: 10, minute: 0);
 
   bool _loading = false;
-  String? _error;
   List<Cliente> _clientesBusqueda = [];
   bool _buscando = false;
 
@@ -69,15 +69,15 @@ class _NuevaReservaScreenState extends ConsumerState<NuevaReservaScreen> {
 
   Future<void> _guardar() async {
     if (_clienteSeleccionado == null) {
-      setState(() => _error = 'Selecciona un cliente');
+      showValidationError(context, 'Selecciona un cliente');
       return;
     }
     if (_servicioController.text.trim().isEmpty) {
-      setState(() => _error = 'Ingresa el servicio');
+      showValidationError(context, 'Ingresa el servicio');
       return;
     }
 
-    setState(() { _loading = true; _error = null; });
+    setState(() { _loading = true; });
 
     try {
       final reserva = Reserva(
@@ -101,7 +101,7 @@ class _NuevaReservaScreenState extends ConsumerState<NuevaReservaScreen> {
         context.go('/agenda');
       }
     } catch (e) {
-      setState(() => _error = 'Error al guardar: $e');
+      if (mounted) showValidationError(context, 'Error al guardar: $e');
     } finally {
       setState(() => _loading = false);
     }
@@ -298,12 +298,6 @@ class _NuevaReservaScreenState extends ConsumerState<NuevaReservaScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-
-              if (_error != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: Text(_error!, style: const TextStyle(color: Colors.red)),
-                ),
 
               ElevatedButton(
                 onPressed: _loading ? null : _guardar,

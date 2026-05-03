@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../../widgets/app_alert.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../models/reserva.dart';
@@ -25,7 +26,6 @@ class _ClienteReservarScreenState extends ConsumerState<ClienteReservarScreen> {
   String? _servicio;
   String? _horaSeleccionada;
   bool _loading = false;
-  String? _error;
 
   final _horariosDisponibles = [
     '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
@@ -51,25 +51,25 @@ class _ClienteReservarScreenState extends ConsumerState<ClienteReservarScreen> {
 
   Future<void> _confirmarReserva() async {
     if (_horaSeleccionada == null) {
-      setState(() => _error = 'Selecciona un horario');
+      showValidationError(context, 'Selecciona un horario');
       return;
     }
 
     final clienteAsync = ref.read(clienteAuthProvider);
     final cliente = clienteAsync.whenOrNull(data: (c) => c);
     if (cliente == null) {
-      setState(() => _error = 'No se encontró tu perfil');
+      showValidationError(context, 'No se encontró tu perfil');
       return;
     }
 
     if (_servicio == null || _servicio!.trim().isEmpty) {
-      setState(() => _error = 'Selecciona un servicio');
+      showValidationError(context, 'Selecciona un servicio');
       return;
     }
 
     final fecha = _selectedDay ?? _focusedDay;
 
-    setState(() { _loading = true; _error = null; });
+    setState(() { _loading = true; });
 
     try {
       await ref.read(reservaRepositoryProvider).create(
@@ -86,16 +86,15 @@ class _ClienteReservarScreenState extends ConsumerState<ClienteReservarScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Reserva confirmada')),
-        );
-        setState(() {
-          _horaSeleccionada = null;
-          _servicio = null;
+        showSuccessAlert(context, 'Reserva confirmada', onConfirm: () {
+          setState(() {
+            _horaSeleccionada = null;
+            _servicio = null;
+          });
         });
       }
     } catch (e) {
-      setState(() => _error = 'Error al reservar: $e');
+      if (mounted) showValidationError(context, 'Error al reservar: $e');
     } finally {
       setState(() => _loading = false);
     }
@@ -257,12 +256,6 @@ class _ClienteReservarScreenState extends ConsumerState<ClienteReservarScreen> {
               },
             ),
             const SizedBox(height: 32),
-
-            if (_error != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
-              ),
 
             ElevatedButton(
               onPressed: _loading || _horaSeleccionada == null ? null : _confirmarReserva,

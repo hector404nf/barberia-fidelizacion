@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../models/cliente.dart';
+import '../../../widgets/app_alert.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/clientes_provider.dart';
 import '../../../repositories/cliente_repository.dart';
@@ -67,11 +68,7 @@ class _ClienteFormScreenState extends ConsumerState<ClienteFormScreen> {
         context.pop();
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-        );
-      }
+      if (mounted) showValidationError(context, 'Error: $e');
     } finally {
       setState(() => _loading = false);
     }

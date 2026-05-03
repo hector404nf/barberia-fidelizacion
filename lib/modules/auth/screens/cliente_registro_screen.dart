@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../widgets/app_alert.dart';
 
 class ClienteRegistroScreen extends ConsumerStatefulWidget {
   final String slug;
@@ -19,7 +20,6 @@ class _ClienteRegistroScreenState extends ConsumerState<ClienteRegistroScreen> {
   final _telefonoController = TextEditingController();
 
   bool _loading = false;
-  String? _error;
 
   Future<void> _registrar(Map<String, dynamic> barberia) async {
     final email = _emailController.text.trim();
@@ -28,15 +28,15 @@ class _ClienteRegistroScreenState extends ConsumerState<ClienteRegistroScreen> {
     final telefono = _telefonoController.text.trim();
 
     if (email.isEmpty || password.length < 6) {
-      setState(() => _error = 'Email válido y contraseña de al menos 6 caracteres');
+      showValidationError(context, 'Email válido y contraseña de al menos 6 caracteres');
       return;
     }
     if (nombre.isEmpty || telefono.isEmpty) {
-      setState(() => _error = 'Nombre y teléfono son obligatorios');
+      showValidationError(context, 'Nombre y teléfono son obligatorios');
       return;
     }
 
-    setState(() { _loading = true; _error = null; });
+    setState(() { _loading = true; });
 
     try {
       final authResponse = await Supabase.instance.client.auth.signUp(
@@ -61,9 +61,9 @@ class _ClienteRegistroScreenState extends ConsumerState<ClienteRegistroScreen> {
 
       if (mounted) context.go('/cliente');
     } on AuthException catch (e) {
-      setState(() => _error = e.message);
+      if (mounted) showValidationError(context, e.message);
     } catch (e) {
-      setState(() => _error = 'Error inesperado: $e');
+      if (mounted) showValidationError(context, 'Error inesperado: $e');
     } finally {
       setState(() => _loading = false);
     }
@@ -120,10 +120,6 @@ class _ClienteRegistroScreenState extends ConsumerState<ClienteRegistroScreen> {
                   _buildTextField(_emailController, 'Email *', Icons.email, TextInputType.emailAddress),
                   const SizedBox(height: 16),
                   _buildTextField(_passwordController, 'Contraseña *', Icons.lock, null, true),
-                  if (_error != null) ...[
-                    const SizedBox(height: 16),
-                    Text(_error!, style: TextStyle(color: Colors.red.shade400)),
-                  ],
                   const SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: _loading ? null : () => _registrar(barberia),

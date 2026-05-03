@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../widgets/app_alert.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -14,10 +15,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _loading = false;
-  String? _error;
 
   Future<void> _login() async {
-    setState(() { _loading = true; _error = null; });
+    setState(() { _loading = true; });
     try {
       await Supabase.instance.client.auth.signInWithPassword(
         email: _emailController.text.trim(),
@@ -25,9 +25,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       );
       if (mounted) context.go('/dashboard');
     } on AuthException catch (e) {
-      setState(() => _error = e.message);
+      if (mounted) showValidationError(context, e.message);
     } catch (e) {
-      setState(() => _error = 'Error inesperado');
+      if (mounted) showValidationError(context, 'Error inesperado');
     } finally {
       setState(() => _loading = false);
     }
@@ -86,10 +86,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       icon: Icons.lock_outline,
                       obscureText: true,
                     ),
-                    if (_error != null) ...[
-                      const SizedBox(height: 12),
-                      Text(_error!, style: const TextStyle(color: Colors.red, fontSize: 13)),
-                    ],
                     const SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: _loading ? null : _login,

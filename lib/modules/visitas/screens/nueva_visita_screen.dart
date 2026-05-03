@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../models/cliente.dart';
+import '../../../widgets/app_alert.dart';
 import '../../../models/servicio.dart';
 import '../../../models/visita.dart';
 import '../../../providers/auth_provider.dart';
@@ -29,7 +30,6 @@ class _NuevaVisitaScreenState extends ConsumerState<NuevaVisitaScreen> {
   Cliente? _clienteSeleccionado;
   String? _barberoSeleccionadoId;
   bool _loading = false;
-  String? _error;
   List<Cliente> _clientesBusqueda = [];
   bool _buscando = false;
 
@@ -82,20 +82,20 @@ class _NuevaVisitaScreenState extends ConsumerState<NuevaVisitaScreen> {
 
   Future<void> _guardar() async {
     if (_clienteSeleccionado == null) {
-      setState(() => _error = 'Selecciona un cliente');
+      showValidationError(context, 'Selecciona un cliente');
       return;
     }
     if (_servicioController.text.trim().isEmpty) {
-      setState(() => _error = 'Ingresa el servicio');
+      showValidationError(context, 'Ingresa el servicio');
       return;
     }
     final monto = double.tryParse(_montoController.text);
     if (monto == null || monto <= 0) {
-      setState(() => _error = 'Ingresa un monto válido');
+      showValidationError(context, 'Ingresa un monto válido');
       return;
     }
 
-    setState(() { _loading = true; _error = null; });
+    setState(() { _loading = true; });
 
     try {
       final visita = Visita(
@@ -119,7 +119,7 @@ class _NuevaVisitaScreenState extends ConsumerState<NuevaVisitaScreen> {
         context.go('/clientes/${_clienteSeleccionado!.id}');
       }
     } catch (e) {
-      setState(() => _error = 'Error al guardar: $e');
+      if (mounted) showValidationError(context, 'Error al guardar: $e');
     } finally {
       setState(() => _loading = false);
     }
@@ -343,12 +343,6 @@ class _NuevaVisitaScreenState extends ConsumerState<NuevaVisitaScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-
-              if (_error != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: Text(_error!, style: const TextStyle(color: Colors.red)),
-                ),
 
               ElevatedButton.icon(
                 onPressed: _loading ? null : _guardar,
