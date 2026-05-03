@@ -13,7 +13,13 @@ class ClienteVisitasScreen extends ConsumerWidget {
     final currency = NumberFormat.currency(locale: 'es_CL', symbol: '\$');
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Mis Visitas')),
+      backgroundColor: const Color(0xFFF5F3EF),
+      appBar: AppBar(
+        title: const Text('Mis Visitas'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: Colors.black87,
+      ),
       body: clienteAsync.when(
         data: (cliente) {
           if (cliente == null) {
@@ -25,7 +31,19 @@ class ClienteVisitasScreen extends ConsumerWidget {
           return visitasAsync.when(
             data: (visitas) {
               if (visitas.isEmpty) {
-                return const Center(child: Text('Aún no tienes visitas registradas'));
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.cut, size: 64, color: Colors.grey.shade400),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Aún no tenés visitas',
+                        style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+                      ),
+                    ],
+                  ),
+                );
               }
               return ListView.builder(
                 padding: const EdgeInsets.all(16),
@@ -34,24 +52,50 @@ class ClienteVisitasScreen extends ConsumerWidget {
                   final v = visitas[index];
                   return Card(
                     margin: const EdgeInsets.only(bottom: 12),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                        child: const Icon(Icons.cut, size: 18),
-                      ),
-                      title: Text(v.servicio),
-                      subtitle: Text(DateFormat('dd/MM/yyyy HH:mm').format(v.fecha.toLocal())),
-                      trailing: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
                         children: [
-                          Text(currency.format(v.monto),
-                              style: const TextStyle(fontWeight: FontWeight.w600)),
-                          Text('+${v.puntosOtorgados} pts',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Theme.of(context).colorScheme.secondary,
-                              )),
+                          Container(
+                            width: 56,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              color: Colors.amber.shade100,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Icon(Icons.cut, color: Colors.amber.shade700),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  v.servicio,
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  DateFormat('dd/MM/yyyy HH:mm').format(v.fecha.toLocal()),
+                                  style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '+${v.puntosOtorgados} puntos',
+                                  style: TextStyle(
+                                    color: Colors.amber.shade700,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Text(
+                            currency.format(v.monto),
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
                         ],
                       ),
                     ),

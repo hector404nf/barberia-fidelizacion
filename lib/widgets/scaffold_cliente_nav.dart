@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class ScaffoldClienteNav extends ConsumerWidget {
   final Widget child;
@@ -18,8 +17,11 @@ class ScaffoldClienteNav extends ConsumerWidget {
     else if (location == '/cliente/recompensas') currentIndex = 3;
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F3EF),
       body: child,
       bottomNavigationBar: NavigationBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
         selectedIndex: currentIndex,
         onDestinationSelected: (index) {
           switch (index) {
@@ -39,19 +41,23 @@ class ScaffoldClienteNav extends ConsumerWidget {
         },
         destinations: const [
           NavigationDestination(
-            icon: Icon(PhosphorIconsRegular.house),
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home),
             label: 'Inicio',
           ),
           NavigationDestination(
-            icon: Icon(PhosphorIconsRegular.scissors),
+            icon: Icon(Icons.cut_outlined),
+            selectedIcon: Icon(Icons.cut),
             label: 'Mis Visitas',
           ),
           NavigationDestination(
-            icon: Icon(PhosphorIconsRegular.calendarPlus),
+            icon: Icon(Icons.calendar_today_outlined),
+            selectedIcon: Icon(Icons.calendar_today),
             label: 'Reservar',
           ),
           NavigationDestination(
-            icon: Icon(PhosphorIconsRegular.trophy),
+            icon: Icon(Icons.trophy_outlined),
+            selectedIcon: Icon(Icons.trophy),
             label: 'Recompensas',
           ),
         ],

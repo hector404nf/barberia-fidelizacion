@@ -39,7 +39,6 @@ class _ClienteRegistroScreenState extends ConsumerState<ClienteRegistroScreen> {
     setState(() { _loading = true; _error = null; });
 
     try {
-      // 1. Crear auth user
       final authResponse = await Supabase.instance.client.auth.signUp(
         email: email,
         password: password,
@@ -48,7 +47,6 @@ class _ClienteRegistroScreenState extends ConsumerState<ClienteRegistroScreen> {
       final userId = authResponse.user!.id;
       final barberiaId = barberia['id'] as String;
 
-      // 2. Registrar/vincular cliente via RPC
       await Supabase.instance.client.rpc('registrar_cliente', params: {
         'p_auth_user_id': userId,
         'p_barberia_id': barberiaId,
@@ -56,7 +54,6 @@ class _ClienteRegistroScreenState extends ConsumerState<ClienteRegistroScreen> {
         'p_telefono': telefono,
       });
 
-      // 3. Iniciar sesión automáticamente
       await Supabase.instance.client.auth.signInWithPassword(
         email: email,
         password: password,
@@ -86,73 +83,72 @@ class _ClienteRegistroScreenState extends ConsumerState<ClienteRegistroScreen> {
     final barberiaAsync = ref.watch(barberiaPorSlugProvider(widget.slug));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Crear cuenta')),
+      backgroundColor: const Color(0xFFF5F3EF),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: Colors.black87,
+      ),
       body: barberiaAsync.when(
         data: (barberia) {
           if (barberia == null) {
             return const Center(child: Text('Barbería no encontrada'));
           }
 
-          return Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 400),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      barberia['nombre'] as String,
-                      style: Theme.of(context).textTheme.headlineSmall,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Registro de Cliente',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Theme.of(context).colorScheme.outline),
-                    ),
-                    const SizedBox(height: 24),
-                    TextField(
-                      controller: _nombreController,
-                      decoration: const InputDecoration(labelText: 'Tu nombre *'),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: _telefonoController,
-                      decoration: const InputDecoration(labelText: 'Teléfono *'),
-                      keyboardType: TextInputType.phone,
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: _emailController,
-                      decoration: const InputDecoration(labelText: 'Email *'),
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: _passwordController,
-                      decoration: const InputDecoration(labelText: 'Contraseña *'),
-                      obscureText: true,
-                    ),
-                    if (_error != null) ...[
-                      const SizedBox(height: 12),
-                      Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
-                    ],
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: _loading ? null : () => _registrar(barberia),
-                      child: _loading
-                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                          : const Text('Crear cuenta'),
-                    ),
-                    const SizedBox(height: 12),
-                    TextButton(
-                      onPressed: () => context.go('/b/${widget.slug}'),
-                      child: const Text('Ya tengo cuenta'),
-                    ),
+          return SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    barberia['nombre'] as String,
+                    style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Crear cuenta de cliente',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+                  ),
+                  const SizedBox(height: 32),
+                  _buildTextField(_nombreController, 'Tu nombre *', Icons.person),
+                  const SizedBox(height: 16),
+                  _buildTextField(_telefonoController, 'Teléfono *', Icons.phone, TextInputType.phone),
+                  const SizedBox(height: 16),
+                  _buildTextField(_emailController, 'Email *', Icons.email, TextInputType.emailAddress),
+                  const SizedBox(height: 16),
+                  _buildTextField(_passwordController, 'Contraseña *', Icons.lock, null, true),
+                  if (_error != null) ...[
+                    const SizedBox(height: 16),
+                    Text(_error!, style: TextStyle(color: Colors.red.shade400)),
                   ],
-                ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: _loading ? null : () => _registrar(barberia),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber.shade600,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                    child: _loading
+                        ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : const Text('Crear cuenta', style: TextStyle(fontSize: 16)),
+                  ),
+                  const SizedBox(height: 16),
+                  Center(
+                    child: TextButton(
+                      onPressed: () => context.go('/b/${widget.slug}/login'),
+                      child: Text(
+                        '¿Ya tenés cuenta? Iniciar sesión',
+                        style: TextStyle(color: Colors.amber.shade700),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           );
@@ -160,6 +156,24 @@ class _ClienteRegistroScreenState extends ConsumerState<ClienteRegistroScreen> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
       ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label, IconData icon, [TextInputType? type, bool obscure = false]) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: Colors.grey.shade500),
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+      ),
+      keyboardType: type,
+      obscureText: obscure,
     );
   }
 }
