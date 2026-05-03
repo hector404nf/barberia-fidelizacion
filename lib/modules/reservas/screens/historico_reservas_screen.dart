@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../models/reserva.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../providers/barberos_provider.dart';
 import '../../../providers/reservas_provider.dart';
 import '../../../widgets/app_alert.dart';
 
@@ -46,7 +47,6 @@ class _HistoricoReservasScreenState extends ConsumerState<HistoricoReservasScree
   Widget build(BuildContext context) {
     final reservasAsync = ref.watch(reservasHistoricoProvider([_fechaInicio, _fechaFin]));
     final barberiaId = ref.watch(barberiaIdProvider);
-    final barberosAsync = ref.watch(barberosProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F3EF),
